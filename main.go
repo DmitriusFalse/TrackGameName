@@ -56,6 +56,7 @@ var (
 	langPath       string
 	config         Config
 	templates      map[string]*template.Template
+	translations   Translations // Глобальная переменная для переводов
 )
 
 func findFirstLine(filePath, search string) (string, error) {
@@ -103,7 +104,7 @@ func extractValue(line, pattern string) string {
 func isRetroarchRunning() bool {
 	processes, err := process.Processes()
 	if err != nil {
-		log.Printf("Ошибка получения списка процессов: %v", err)
+		log.Printf("Error getting process list: %v", err)
 		return false
 	}
 	for _, p := range processes {
@@ -132,13 +133,13 @@ func setAutorun(enable bool, appName string) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("Программа добавлена в автозагрузку: %s", exePath)
+		log.Printf("Program added to autorun: %s", exePath)
 	} else {
 		err = key.DeleteValue(appName)
 		if err != nil && err != registry.ErrNotExist {
 			return err
 		}
-		log.Println("Программа удалена из автозагрузки")
+		log.Println("Program removed from autorun")
 	}
 	return nil
 }
@@ -168,12 +169,12 @@ func loadTranslations(language string) (Translations, error) {
 	langFile := filepath.Join(langPath, language+".json")
 	data, err := os.ReadFile(langFile)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка загрузки перевода %s: %v", langFile, err)
+		return nil, fmt.Errorf("error loading translation %s: %v", langFile, err)
 	}
 	var translations Translations
 	err = json.Unmarshal(data, &translations)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка парсинга перевода %s: %v", langFile, err)
+		return nil, fmt.Errorf("error parsing translation %s: %v", langFile, err)
 	}
 	return translations, nil
 }
@@ -186,7 +187,7 @@ func loadTemplates(theme string) error {
 		tmplPath := filepath.Join(themeDir, file)
 		tmpl, err := template.ParseFiles(tmplPath)
 		if err != nil {
-			return fmt.Errorf("ошибка загрузки шаблона %s: %v", file, err)
+			return fmt.Errorf("error loading template %s: %v", file, err)
 		}
 		templates[file] = tmpl
 	}
@@ -197,14 +198,14 @@ func getAvailableThemes() []string {
 	var themes []string
 	dir, err := os.Open(themePath)
 	if err != nil {
-		log.Printf("Ошибка чтения папки Theme: %v", err)
+		log.Printf("Error reading Theme folder: %v", err)
 		return []string{"default"}
 	}
 	defer dir.Close()
 
 	dirs, err := dir.Readdir(-1)
 	if err != nil {
-		log.Printf("Ошибка чтения содержимого Theme: %v", err)
+		log.Printf("Error reading Theme contents: %v", err)
 		return []string{"default"}
 	}
 
@@ -223,14 +224,14 @@ func getAvailableLanguages() []string {
 	var languages []string
 	dir, err := os.Open(langPath)
 	if err != nil {
-		log.Printf("Ошибка чтения папки lang: %v", err)
+		log.Printf("Error reading lang folder: %v", err)
 		return []string{"en"}
 	}
 	defer dir.Close()
 
 	files, err := dir.Readdir(-1)
 	if err != nil {
-		log.Printf("Ошибка чтения содержимого lang: %v", err)
+		log.Printf("Error reading lang contents: %v", err)
 		return []string{"en"}
 	}
 
@@ -266,8 +267,8 @@ func startWebServer(port int) {
 		defer configMutex.RUnlock()
 		translations, err := loadTranslations(config.Language)
 		if err != nil {
-			log.Printf("Ошибка загрузки переводов: %v", err)
-			http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
+			log.Printf("Error loading translations: %v", err)
+			http.Error(w, "Server error", http.StatusInternalServerError)
 			return
 		}
 		data := struct {
@@ -314,8 +315,8 @@ func startWebServer(port int) {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := templates["index.html"].Execute(w, data); err != nil {
-			log.Printf("Ошибка рендеринга index.html: %v", err)
-			http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
+			log.Printf("Error rendering index.html: %v", err)
+			http.Error(w, "Server error", http.StatusInternalServerError)
 		}
 	})
 
@@ -333,8 +334,8 @@ func startWebServer(port int) {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := templates["game.html"].Execute(w, data); err != nil {
-			log.Printf("Ошибка рендеринга game.html: %v", err)
-			http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
+			log.Printf("Error rendering game.html: %v", err)
+			http.Error(w, "Server error", http.StatusInternalServerError)
 		}
 	})
 
@@ -360,8 +361,8 @@ func startWebServer(port int) {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := templates["system.html"].Execute(w, data); err != nil {
-			log.Printf("Ошибка рендеринга system.html: %v", err)
-			http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
+			log.Printf("Error rendering system.html: %v", err)
+			http.Error(w, "Server error", http.StatusInternalServerError)
 		}
 	})
 
@@ -389,8 +390,8 @@ func startWebServer(port int) {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := templates["all.html"].Execute(w, data); err != nil {
-			log.Printf("Ошибка рендеринга all.html: %v", err)
-			http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
+			log.Printf("Error rendering all.html: %v", err)
+			http.Error(w, "Server error", http.StatusInternalServerError)
 		}
 	})
 
@@ -420,7 +421,6 @@ func startWebServer(port int) {
 			thumbnailPath := filepath.Join(config.ThumbnailsPath, currentConsole, currentGame+".png")
 			if _, err := os.Stat(thumbnailPath); !os.IsNotExist(err) {
 				data.ThumbnailPath = fmt.Sprintf("/thumbnails/%s/%s.png", currentConsole, currentGame)
-				// Обработка размера
 				if config.ThumbnailSize != "" && config.ThumbnailSize != "0" {
 					parts := strings.Split(config.ThumbnailSize, "x")
 					if len(parts) == 2 {
@@ -438,8 +438,8 @@ func startWebServer(port int) {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := templates["thumbnails.html"].Execute(w, data); err != nil {
-			log.Printf("Ошибка рендеринга thumbnails.html: %v", err)
-			http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
+			log.Printf("Error rendering thumbnails.html: %v", err)
+			http.Error(w, "Server error", http.StatusInternalServerError)
 		}
 	})
 
@@ -451,8 +451,8 @@ func startWebServer(port int) {
 		if r.Method == "GET" {
 			translations, err := loadTranslations(currentConfig.Language)
 			if err != nil {
-				log.Printf("Ошибка загрузки переводов: %v", err)
-				http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
+				log.Printf("Error loading translations: %v", err)
+				http.Error(w, "Server error", http.StatusInternalServerError)
 				return
 			}
 			data := struct {
@@ -468,12 +468,12 @@ func startWebServer(port int) {
 			}
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			if err := templates["settings.html"].Execute(w, data); err != nil {
-				log.Printf("Ошибка рендеринга settings.html: %v", err)
-				http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
+				log.Printf("Error rendering settings.html: %v", err)
+				http.Error(w, "Server error", http.StatusInternalServerError)
 			}
 		} else if r.Method == "POST" {
 			if err := r.ParseForm(); err != nil {
-				http.Error(w, "Ошибка обработки формы", http.StatusBadRequest)
+				http.Error(w, "Error parsing form", http.StatusBadRequest)
 				return
 			}
 
@@ -498,36 +498,40 @@ func startWebServer(port int) {
 			if _, err := os.Stat(filepath.Join(themePath, newTheme)); !os.IsNotExist(err) {
 				config.Theme = newTheme
 				if err := loadTemplates(config.Theme); err != nil {
-					log.Printf("Ошибка загрузки темы %s: %v", config.Theme, err)
+					log.Printf("Error loading theme %s: %v", config.Theme, err)
 				}
 			}
 			newLanguage := r.FormValue("language")
 			if _, err := os.Stat(filepath.Join(langPath, newLanguage+".json")); !os.IsNotExist(err) {
 				config.Language = newLanguage
+				translations, err = loadTranslations(config.Language) // Обновляем глобальные переводы
+				if err != nil {
+					log.Printf("Error reloading translations: %v", err)
+				}
 			}
 			config.ThumbnailsPath = r.FormValue("thumbnails_path")
 			config.EnableThumbnails = r.FormValue("enable_thumbnails") == "on"
 			config.ThumbnailSize = r.FormValue("thumbnail_size")
 
 			if err := updateConfig(config); err != nil {
-				http.Error(w, "Ошибка сохранения настроек", http.StatusInternalServerError)
-				log.Printf("Ошибка сохранения config.ini: %v", err)
+				http.Error(w, "Error saving settings", http.StatusInternalServerError)
+				log.Printf("Error saving config.ini: %v", err)
 				return
 			}
 			if config.Autorun != (r.FormValue("autorun") != "on") {
 				if err := setAutorun(config.Autorun, "TrackGameName"); err != nil {
-					log.Printf("Ошибка изменения автозагрузки: %v", err)
+					log.Printf("Error updating autorun: %v", err)
 				}
 			}
-			log.Println("Настройки обновлены через веб-интерфейс")
+			log.Println(translations["settings_updated"])
 			http.Redirect(w, r, "/settings", http.StatusSeeOther)
 		}
 	})
 
-	log.Printf("Веб-сервер запущен на http://localhost:%d", port)
+	log.Printf("Web server started at http://localhost:%d", port)
 	go func() {
 		if err := http.ListenAndServe(addr, nil); err != nil {
-			log.Printf("Ошибка веб-сервера: %v", err)
+			log.Printf("Web server error: %v", err)
 		}
 	}()
 }
@@ -541,11 +545,10 @@ func main() {
 	log.SetOutput(logFile)
 	log.SetFlags(log.LstdFlags)
 
-	log.Println("TrackGameName запущен")
-
+	// Загружаем конфигурацию
 	cfg, err := ini.Load("config.ini")
 	if err != nil {
-		log.Printf("Ошибка загрузки config.ini: %v", err)
+		log.Printf("Error loading config.ini: %v", err)
 		cfg = ini.Empty()
 		cfg.Section("").Key("retroarch_path").SetValue("C:\\RetroArch-Win64")
 		cfg.Section("").Key("save_path").SetValue("")
@@ -563,10 +566,10 @@ func main() {
 		cfg.Section("systems").Key("Nintendo").SetValue("nes.png")
 		err = cfg.SaveTo("config.ini")
 		if err != nil {
-			log.Printf("Ошибка создания config.ini: %v", err)
+			log.Printf("Error creating config.ini: %v", err)
 			os.Exit(1)
 		}
-		log.Println("Файл config.ini создан. Продолжаем выполнение.")
+		log.Println("Config file config.ini created. Continuing execution.")
 	}
 
 	config = Config{
@@ -574,7 +577,7 @@ func main() {
 	}
 	err = cfg.MapTo(&config)
 	if err != nil {
-		log.Printf("Ошибка чтения config.ini: %v", err)
+		log.Printf("Error reading config.ini: %v", err)
 		os.Exit(1)
 	}
 
@@ -587,51 +590,64 @@ func main() {
 	if savePath == "" {
 		savePath, err = os.Getwd()
 		if err != nil {
-			log.Printf("Ошибка получения текущей директории: %v", err)
+			log.Printf("Error getting current directory: %v", err)
 			os.Exit(1)
 		}
 	}
 
 	if err := os.MkdirAll(savePath, 0755); err != nil {
-		log.Printf("Ошибка создания папки save_path: %v", err)
+		log.Printf("Error creating save_path folder: %v", err)
 		os.Exit(1)
 	}
 
 	systemsPath = filepath.Join(savePath, "systems")
 	if err := os.MkdirAll(systemsPath, 0755); err != nil {
-		log.Printf("Ошибка создания папки systems: %v", err)
+		log.Printf("Error creating systems folder: %v", err)
 		os.Exit(1)
 	}
 
 	themePath = filepath.Join(savePath, "Theme")
 	if err := os.MkdirAll(filepath.Join(themePath, "default"), 0755); err != nil {
-		log.Printf("Ошибка создания папки Theme/default: %v", err)
+		log.Printf("Error creating Theme/default folder: %v", err)
 		os.Exit(1)
 	}
 
 	langPath = filepath.Join("lang")
 	if err := os.MkdirAll(langPath, 0755); err != nil {
-		log.Printf("Ошибка создания папки lang: %v", err)
+		log.Printf("Error creating lang folder: %v", err)
 		os.Exit(1)
 	}
 
 	if err := loadTemplates(config.Theme); err != nil {
-		log.Printf("Ошибка загрузки темы %s: %v", config.Theme, err)
+		log.Printf("Error loading theme %s: %v", config.Theme, err)
 		config.Theme = "default"
 		if err := loadTemplates(config.Theme); err != nil {
-			log.Printf("Ошибка загрузки темы по умолчанию: %v", err)
+			log.Printf("Error loading default theme: %v", err)
 			os.Exit(1)
 		}
 	}
 
+	// Загружаем переводы
+	translations, err = loadTranslations(config.Language)
+	if err != nil {
+		log.Printf("Error loading translations: %v", err)
+		config.Language = "en" // По умолчанию английский
+		translations, err = loadTranslations(config.Language)
+		if err != nil {
+			log.Printf("Error loading default translations: %v", err)
+			os.Exit(1)
+		}
+	}
+	log.Println(translations["app_started"])
+
 	if err := setAutorun(config.Autorun, "TrackGameName"); err != nil {
-		log.Printf("Ошибка настройки автозагрузки при запуске: %v", err)
+		log.Printf("Error setting autorun at startup: %v", err)
 	}
 
 	startWebServer(config.WebPort)
 
 	lplPath := filepath.Join(config.RetroarchPath, "content_history.lpl")
-	log.Printf("Путь к content_history.lpl: %s", lplPath)
+	log.Printf("Path to content_history.lpl: %s", lplPath)
 
 	systray.Run(onReady(savePath), onExit)
 }
@@ -640,24 +656,24 @@ func onReady(savePath string) func() {
 	return func() {
 		if isRetroarchRunning() && len(activeIcon) > 0 {
 			systray.SetIcon(activeIcon)
-			log.Println("RetroArch запущен, установлена иконка active.ico")
+			log.Println(translations["retroarch_running_icon"])
 		} else if len(inactiveIcon) > 0 {
 			systray.SetIcon(inactiveIcon)
-			log.Println("RetroArch не запущен, установлена иконка inactive.ico")
+			log.Println(translations["retroarch_not_running_icon"])
 		} else {
-			log.Println("Иконки не загружены, используется стандартная")
+			log.Println(translations["icons_not_loaded"])
 		}
 
-		systray.SetTitle("TrackGameName")
-		systray.SetTooltip("TrackGameName")
-		log.Println("Systray инициализирован")
+		systray.SetTitle(translations["title"])
+		systray.SetTooltip(translations["title"])
+		log.Println(translations["systray_initialized"])
 
-		gameItem := systray.AddMenuItem("Игра: Не определена", "Текущая игра")
-		consoleItem := systray.AddMenuItem("Система: Не определена", "Текущая система")
+		gameItem := systray.AddMenuItem(translations["game_not_detected"], translations["game_not_detected"])
+		consoleItem := systray.AddMenuItem(translations["system_not_detected"], translations["system_not_detected"])
 		systray.AddSeparator()
-		openWebItem := systray.AddMenuItem("Открыть главную страницу", "Открыть веб-интерфейс")
-		quitItem := systray.AddMenuItem("Выход", "Завершить программу")
-		log.Println("Элементы меню добавлены")
+		openWebItem := systray.AddMenuItem(translations["open_web_page"], translations["open_web_page_tip"])
+		quitItem := systray.AddMenuItem(translations["exit"], translations["exit_tip"])
+		log.Println(translations["menu_items_added"])
 
 		gamename := ""
 		var lastState bool
@@ -668,34 +684,34 @@ func onReady(savePath string) func() {
 				if currentState != lastState {
 					if currentState && len(activeIcon) > 0 {
 						systray.SetIcon(activeIcon)
-						log.Println("RetroArch запущен, иконка изменена на active.ico")
+						log.Println(translations["retroarch_running_icon"])
 					} else if len(inactiveIcon) > 0 {
 						systray.SetIcon(inactiveIcon)
-						log.Println("RetroArch закрыт, иконка изменена на inactive.ico")
+						log.Println(translations["retroarch_closed_icon"])
 						configMutex.RLock()
 						if config.OutputToFiles {
 							if config.SaveToOneFile {
 								if err := os.WriteFile(filepath.Join(savePath, "output.txt"), []byte(""), 0644); err != nil {
-									log.Printf("Ошибка очистки output.txt: %v", err)
+									log.Printf("Error clearing output.txt: %v", err)
 								} else {
-									log.Println("Данные из output.txt удалены")
+									log.Println(translations["data_cleared_output"])
 								}
 							} else {
 								if err := os.WriteFile(filepath.Join(savePath, "game.txt"), []byte(""), 0644); err != nil {
-									log.Printf("Ошибка очистки game.txt: %v", err)
+									log.Printf("Error clearing game.txt: %v", err)
 								} else {
-									log.Println("Данные из game.txt удалены")
+									log.Println(translations["data_cleared_game"])
 								}
 								if err := os.WriteFile(filepath.Join(savePath, "console.txt"), []byte(""), 0644); err != nil {
-									log.Printf("Ошибка очистки console.txt: %v", err)
+									log.Printf("Error clearing console.txt: %v", err)
 								} else {
-									log.Println("Данные из console.txt удалены")
+									log.Println(translations["data_cleared_console"])
 								}
 							}
 						}
 						configMutex.RUnlock()
-						gameItem.SetTitle("Процесс не запущен")
-						consoleItem.SetTitle("Процесс не запущен")
+						gameItem.SetTitle(translations["process_not_running"])
+						consoleItem.SetTitle(translations["process_not_running"])
 						gamename = ""
 						currentGame = ""
 						currentConsole = ""
@@ -715,7 +731,7 @@ func onReady(savePath string) func() {
 					newGameLine, err1 := findFirstLine(currentLplPath, `"label":`)
 					newCoreLine, err2 := findFirstLine(currentLplPath, `"db_name":`)
 					if err1 != nil || err2 != nil {
-						log.Printf("Ошибка чтения файла: %v, %v", err1, err2)
+						log.Printf("Error reading file: %v, %v", err1, err2)
 						time.Sleep(1 * time.Second)
 						continue
 					}
@@ -729,27 +745,27 @@ func onReady(savePath string) func() {
 							if config.SaveToOneFile {
 								output := consoleName + ": " + newGamename
 								if err := os.WriteFile(filepath.Join(currentSavePath, "output.txt"), []byte(output), 0644); err == nil {
-									log.Printf("Данные обновлены в output.txt: %s", output)
+									log.Printf(translations["data_updated_output"], output)
 								} else {
-									log.Printf("Ошибка записи в output.txt: %v", err)
+									log.Printf("Error writing to output.txt: %v", err)
 								}
 							} else {
 								if err := os.WriteFile(filepath.Join(currentSavePath, "game.txt"), []byte(newGamename), 0644); err == nil {
-									log.Printf("Игра обновлена: %s", newGamename)
+									log.Printf(translations["game_updated"], newGamename)
 								} else {
-									log.Printf("Ошибка записи в game.txt: %v", err)
+									log.Printf("Error writing to game.txt: %v", err)
 								}
 								if err := os.WriteFile(filepath.Join(currentSavePath, "console.txt"), []byte(consoleName), 0644); err == nil {
-									log.Printf("Система обновлена: %s", consoleName)
+									log.Printf(translations["system_updated"], consoleName)
 								} else {
-									log.Printf("Ошибка записи в console.txt: %v", err)
+									log.Printf("Error writing to console.txt: %v", err)
 								}
 							}
 						}
 						configMutex.RUnlock()
 
-						gameItem.SetTitle("Игра: " + newGamename)
-						consoleItem.SetTitle("Система: " + consoleName)
+						gameItem.SetTitle("Game: " + newGamename)
+						consoleItem.SetTitle("System: " + consoleName)
 						gamename = newGamename
 						currentGame = newGamename
 						currentConsole = consoleName
@@ -769,12 +785,12 @@ func onReady(savePath string) func() {
 					configMutex.RUnlock()
 					err := openBrowser(url)
 					if err != nil {
-						log.Printf("Ошибка открытия браузера: %v", err)
+						log.Printf("Error opening browser: %v", err)
 					} else {
-						log.Println("Главная страница открыта в браузере")
+						log.Println(translations["web_page_opened"])
 					}
 				case <-quitItem.ClickedCh:
-					log.Println("Клик на 'Выход' получен")
+					log.Println("Exit clicked received")
 					systray.Quit()
 					return
 				}
@@ -788,6 +804,6 @@ func openBrowser(url string) error {
 }
 
 func onExit() {
-	log.Println("Программа завершена")
+	log.Println(translations["app_exited"])
 	os.Exit(0)
 }
