@@ -7,7 +7,7 @@ TrackGameName is a lightweight Windows tool designed to track and output RetroAr
 
 ### Features
 - Real-time monitoring of RetroArch to display the current game and system.
-- Web interface with endpoints: `/game`, `/system`, `/all`, `/thumbnails`, and `/settings`.
+- Endpoints (`/game`, `/system`, `/all`, `/thumbnails`) for seamless integration with applications like OBS Studio.
 - Game thumbnails with customizable sizes (e.g., `200x200`, `200x`, `x200`, or original).
 - Optional text file output (`game.txt`, `console.txt`, or `output.txt`) for application integration.
 - Configurable settings: RetroArch path, thumbnails folder, refresh interval, theme, and more.
@@ -55,7 +55,7 @@ TrackGameName — это лёгкий инструмент для Windows, ко�
 
 ### Возможности
 - Отслеживание RetroArch в реальном времени для показа текущей игры и системы.
-- Веб-интерфейс с эндпоинтами: `/game`, `/system`, `/all`, `/thumbnails` и `/settings`.
+- Эндпоинты (`/game`, `/system`, `/all`, `/thumbnails`) для удобной интеграции с приложениями, такими как OBS Studio.
 - Отображение миниатюр игр с настраиваемым размером (например, `200x200`, `200x`, `x200` или оригинал).
 - Опциональный вывод в текстовые файлы (`game.txt`, `console.txt` или `output.txt`) для интеграции с приложениями.
 - Настраиваемые параметры: путь к RetroArch, папка с миниатюрами, интервал обновления, тема и др.
