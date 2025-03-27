@@ -22,8 +22,6 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// Встраиваем иконки в бинарник
-//
 //go:embed active.ico
 var activeIcon []byte
 
@@ -43,7 +41,7 @@ type Config struct {
 	Language         string            `ini:"language"`
 	ThumbnailsPath   string            `ini:"thumbnails_path"`
 	EnableThumbnails bool              `ini:"enable_thumbnails"`
-	ThumbnailSize    string            `ini:"thumbnail_size"` // Новый параметр размера
+	ThumbnailSize    string            `ini:"thumbnail_size"`
 	Systems          map[string]string `ini:"systems"`
 }
 
@@ -635,24 +633,17 @@ func main() {
 	lplPath := filepath.Join(config.RetroarchPath, "content_history.lpl")
 	log.Printf("Путь к content_history.lpl: %s", lplPath)
 
-	systray.Run(onReady(lplPath, savePath), onExit)
+	systray.Run(onReady(savePath), onExit)
 }
 
-func onReady(lplPath string, savePath string) func() {
+func onReady(savePath string) func() {
 	return func() {
-		if len(activeIcon) == 0 {
-			log.Println("Ошибка: active.ico не встроен в программу")
-		}
-		if len(inactiveIcon) == 0 {
-			log.Println("Ошибка: inactive.ico не встроен в программу")
-		}
-
 		if isRetroarchRunning() && len(activeIcon) > 0 {
 			systray.SetIcon(activeIcon)
-			log.Println("RetroArch запущен, установлена встроенная иконка active.ico")
+			log.Println("RetroArch запущен, установлена иконка active.ico")
 		} else if len(inactiveIcon) > 0 {
 			systray.SetIcon(inactiveIcon)
-			log.Println("RetroArch не запущен, установлена встроенная иконка inactive.ico")
+			log.Println("RetroArch не запущен, установлена иконка inactive.ico")
 		} else {
 			log.Println("Иконки не загружены, используется стандартная")
 		}

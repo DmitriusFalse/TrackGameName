@@ -1,7 +1,7 @@
 /* Общие стили для тёмной темы */
 body.main-body {
-    background-color: #1e1e1e; /* Тёмно-серый фон */
-    color: #d4d4d4; /* Светло-серый текст для читаемости */
+    background-color: #1e1e1e;
+    color: #d4d4d4;
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
@@ -12,9 +12,9 @@ body.main-body {
 }
 
 .container {
-    background-color: #2a2a2a; /* Чуть светлее тёмный фон для контейнера */
+    background-color: #2a2a2a;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Более тёмная тень */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     padding: 20px;
     max-width: 600px;
     width: 100%;
@@ -23,14 +23,14 @@ body.main-body {
 
 /* Заголовки */
 h2.main-title, h2.settings-title {
-    color: #e0e0e0; /* Почти белый для заголовков */
+    color: #e0e0e0;
     font-size: 24px;
     margin-bottom: 20px;
     text-align: center;
 }
 
 h3.endpoints-title {
-    color: #b0b0b0; /* Светло-серый для подзаголовков */
+    color: #b0b0b0;
     font-size: 18px;
     margin-top: 20px;
     margin-bottom: 10px;
@@ -39,32 +39,30 @@ h3.endpoints-title {
 /* Текст */
 .game-text, .system-text {
     font-size: 16px;
-    color: #cccccc; /* Светло-серый для текста */
+    color: #cccccc;
 }
 
 .value {
     font-weight: bold;
-    color: #61dafb; /* Голубой для значений */
+    color: #61dafb;
 }
 
 /* Ссылки */
 a.settings-link, a.home-link, a.endpoint-link {
-    color: #61dafb; /* Голубой для ссылок */
+    color: #61dafb;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
-    color: #ff6b6b; /* Красный при наведении */
+    color: #ff6b6b;
 }
 
-/* Секция навигации */
 .nav-section {
     text-align: center;
     margin: 10px 0;
 }
 
-/* Список эндпоинтов */
 .endpoints-list {
     list-style-type: none;
     padding: 0;
@@ -75,7 +73,6 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
     font-size: 14px;
 }
 
-/* Форма настроек */
 .settings-form {
     display: flex;
     flex-direction: column;
@@ -95,27 +92,27 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 
 .label {
     font-weight: bold;
-    color: #e0e0e0; /* Почти белый для меток */
+    color: #e0e0e0;
     margin-bottom: 5px;
 }
 
 .checkbox-label {
     margin-bottom: 0;
-    width: auto; /* Убираем фиксированную ширину для чекбоксов */
+    width: auto;
 }
 
 .input-field {
     padding: 8px;
-    border: 1px solid #444444; /* Тёмно-серая рамка */
+    border: 1px solid #444444;
     border-radius: 4px;
     font-size: 14px;
-    background-color: #333333; /* Тёмный фон для полей */
-    color: #d4d4d4; /* Светлый текст */
+    background-color: #333333;
+    color: #d4d4d4;
     transition: border-color 0.3s ease;
 }
 
 .input-field:focus {
-    border-color: #61dafb; /* Голубая рамка при фокусе */
+    border-color: #61dafb;
     outline: none;
 }
 
@@ -125,19 +122,18 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 
 .description {
     font-size: 12px;
-    color: #999999; /* Серый для описаний */
+    color: #999999;
     margin-top: 5px;
 }
 
 .checkbox-desc {
     margin-top: 0;
-    flex-grow: 1; /* Описание занимает оставшееся место */
+    flex-grow: 1;
 }
 
-/* Кнопка */
 .submit-button {
-    background-color: #61dafb; /* Голубой фон кнопки */
-    color: #1e1e1e; /* Тёмный текст для контраста */
+    background-color: #61dafb;
+    color: #1e1e1e;
     padding: 10px;
     border: none;
     border-radius: 4px;
@@ -147,17 +143,15 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 }
 
 .submit-button:hover {
-    background-color: #4fa8d5; /* Темнее при наведении */
+    background-color: #4fa8d5;
 }
 
-/* Иконки */
 .system-icon {
     max-width: 32px;
     vertical-align: middle;
     margin-right: 5px;
 }
 
-/* Секция статуса */
 .status-section {
     margin-bottom: 20px;
 }
@@ -173,7 +167,6 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 }
 
 .thumbnail {
-    /*max-width: 200px;*/
     display: block;
     margin: 0 auto;
 }
@@ -199,7 +192,7 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 }
 .donate-text {
     font-size: 16px;
-    color: #737272; /* Ваше изменение */
+    color: #737272;
 }
 .donate-link {
     color: #1e90ff;

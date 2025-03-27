@@ -95,7 +95,7 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 
 .checkbox-label {
     margin-bottom: 0;
-    width: auto; /* Убираем фиксированную ширину для чекбоксов */
+    width: auto;
 }
 
 .input-field {
@@ -124,7 +124,7 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 
 .checkbox-desc {
     margin-top: 0;
-    flex-grow: 1; /* Описание занимает оставшееся место */
+    flex-grow: 1;
 }
 
 .submit-button {
@@ -163,7 +163,6 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 }
 
 .thumbnail {
-    /*max-width: 200px;*/
     display: block;
     margin: 0 auto;
 }
