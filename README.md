@@ -107,7 +107,7 @@ Below is a guide to all settings available on the `/settings` page and how they 
 
 - **Save Path**
   - Description: Path to the folder where text files (`game.txt`, `console.txt`, or `output.txt`) with game/system data are saved.
-  - Example value: `D:\OBS\Text`
+  - Example value: `D:\Folder`
   - Matches in `config.ini`: `save_path`
   - Default: Empty string (program’s current directory)
   - Note: Leave empty to use the program’s folder.
@@ -170,7 +170,7 @@ Below is a guide to all settings available on the `/settings` page and how they 
 
 - **Thumbnails Path**
   - Description: Path to the folder with game thumbnails for display on `/thumbnails` and the main page.
-  - Example value: `D:\Games\roms\retroarch\thumbnails`
+  - Example value: `D:\thumbnails`
   - Matches in `config.ini`: `thumbnails_path`
   - Default: Empty string (thumbnails disabled)
   - Note: Format: `<system>\<game>.png`.
@@ -206,7 +206,7 @@ Below is a guide to all settings available on the `/settings` page and how they 
 
 - **Путь сохранения (`Save Path`)**
   - Описание: Путь к папке, куда сохраняются текстовые файлы (`game.txt`, `console.txt` или `output.txt`) с данными о текущей игре и системе.
-  - Пример значения: `D:\OBS\Text`
+  - Пример значения: `D:\Папка`
   - Соответствие в `config.ini`: `save_path`
   - По умолчанию: Пустая строка (текущая директория программы)
   - Примечание: Оставьте пустым, чтобы использовать папку программы.
@@ -269,7 +269,7 @@ Below is a guide to all settings available on the `/settings` page and how they 
 
 - **Путь к миниатюрам (`Thumbnails Path`)**
   - Описание: Путь к папке с миниатюрами игр для отображения на `/thumbnails` и главной странице.
-  - Пример значения: `D:\Games\roms\retroarch\thumbnails`
+  - Пример значения: `D:\thumbnails`
   - Соответствие в `config.ini`: `thumbnails_path`
   - По умолчанию: Пустая строка (миниатюры отключены)
   - Примечание: Формат: `<система>\<игра>.png`.
