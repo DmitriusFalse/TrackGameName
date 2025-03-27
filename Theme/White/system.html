@@ -1,0 +1,23 @@
+
+<html>
+<head>
+	<meta http-equiv="refresh" content="{{.RefreshInterval}}">
+	<link rel="stylesheet" href="/theme/default/styles.css">
+</head>
+<body class="main-body">
+	<div class="container">
+		{{if and (gt .SystemIcon 0) (ne .CurrentConsole "")}}
+			{{if .IconFile}}
+				<img src="/systems/{{.IconFile}}" alt="{{.CurrentConsole}}" class="system-icon">
+				{{if eq .SystemIcon 1}}
+					<span class="system-text">{{.CurrentConsole}}</span>
+				{{end}}
+			{{else}}
+				<span class="system-text">{{.CurrentConsole}}</span>
+			{{end}}
+		{{else}}
+			<span class="system-text">{{.CurrentConsole}}</span>
+		{{end}}
+	</div>
+</body>
+</html>

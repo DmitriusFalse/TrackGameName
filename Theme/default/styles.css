@@ -1,0 +1,216 @@
+/* Общие стили для тёмной темы */
+body.main-body {
+    background-color: #1e1e1e; /* Тёмно-серый фон */
+    color: #d4d4d4; /* Светло-серый текст для читаемости */
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #2a2a2a; /* Чуть светлее тёмный фон для контейнера */
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Более тёмная тень */
+    padding: 20px;
+    max-width: 600px;
+    width: 100%;
+    margin: 20px;
+}
+
+/* Заголовки */
+h2.main-title, h2.settings-title {
+    color: #e0e0e0; /* Почти белый для заголовков */
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+h3.endpoints-title {
+    color: #b0b0b0; /* Светло-серый для подзаголовков */
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+/* Текст */
+.game-text, .system-text {
+    font-size: 16px;
+    color: #cccccc; /* Светло-серый для текста */
+}
+
+.value {
+    font-weight: bold;
+    color: #61dafb; /* Голубой для значений */
+}
+
+/* Ссылки */
+a.settings-link, a.home-link, a.endpoint-link {
+    color: #61dafb; /* Голубой для ссылок */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
+    color: #ff6b6b; /* Красный при наведении */
+}
+
+/* Секция навигации */
+.nav-section {
+    text-align: center;
+    margin: 10px 0;
+}
+
+/* Список эндпоинтов */
+.endpoints-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.endpoint-item {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Форма настроек */
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.label {
+    font-weight: bold;
+    color: #e0e0e0; /* Почти белый для меток */
+    margin-bottom: 5px;
+}
+
+.checkbox-label {
+    margin-bottom: 0;
+    width: auto; /* Убираем фиксированную ширину для чекбоксов */
+}
+
+.input-field {
+    padding: 8px;
+    border: 1px solid #444444; /* Тёмно-серая рамка */
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #333333; /* Тёмный фон для полей */
+    color: #d4d4d4; /* Светлый текст */
+    transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+    border-color: #61dafb; /* Голубая рамка при фокусе */
+    outline: none;
+}
+
+.checkbox {
+    margin: 0;
+}
+
+.description {
+    font-size: 12px;
+    color: #999999; /* Серый для описаний */
+    margin-top: 5px;
+}
+
+.checkbox-desc {
+    margin-top: 0;
+    flex-grow: 1; /* Описание занимает оставшееся место */
+}
+
+/* Кнопка */
+.submit-button {
+    background-color: #61dafb; /* Голубой фон кнопки */
+    color: #1e1e1e; /* Тёмный текст для контраста */
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #4fa8d5; /* Темнее при наведении */
+}
+
+/* Иконки */
+.system-icon {
+    max-width: 32px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+/* Секция статуса */
+.status-section {
+    margin-bottom: 20px;
+}
+
+.status-line, .game-line, .system-line {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.label {
+    display: inline-block;
+    width: 200px;
+}
+
+.thumbnail {
+    /*max-width: 200px;*/
+    display: block;
+    margin: 0 auto;
+}
+
+.no-thumbnail {
+    font-size: 16px;
+    color: #555555;
+}
+.thumbnail-container {
+    max-width: 100%;
+}
+
+.thumbnail-section {
+    margin-top: 20px;
+    text-align: center;
+}
+.index-container .thumbnail{
+    max-width: 100%;
+}
+.donate-section {
+    margin-top: 20px;
+    text-align: center;
+}
+.donate-text {
+    font-size: 16px;
+    color: #737272; /* Ваше изменение */
+}
+.donate-link {
+    color: #1e90ff;
+    text-decoration: none;
+}
+.donate-link:hover {
+    text-decoration: underline;
+}
+.donate-heart {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-left: 5px;
+}

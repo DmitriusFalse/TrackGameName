@@ -1,0 +1,17 @@
+<html>
+<head>
+    <meta http-equiv="refresh" content="{{.RefreshInterval}}">
+    <link rel="stylesheet" href="/theme/{{.Theme}}/styles.css">
+</head>
+<body class="main-body">
+<div class="container thumbnail-container">
+    {{if and .EnableThumbnails (ne .ThumbnailPath "")}}
+    <img src="{{.ThumbnailPath}}" alt="{{.CurrentGame}}" class="thumbnail"
+         {{if .ThumbnailWidth}}width="{{.ThumbnailWidth}}"{{end}}
+         {{if .ThumbnailHeight}}height="{{.ThumbnailHeight}}"{{end}}>
+    {{else}}
+    <span class="no-thumbnail">No thumbnail available</span>
+    {{end}}
+</div>
+</body>
+</html>

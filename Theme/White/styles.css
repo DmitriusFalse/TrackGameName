@@ -1,0 +1,206 @@
+/* Общие стили для светлой темы */
+body.main-body {
+    background-color: #f5f5f5;
+    color: #333333;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 600px;
+    width: 100%;
+    margin: 20px;
+}
+
+h2.main-title, h2.settings-title {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+h3.endpoints-title {
+    color: #34495e;
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.game-text, .system-text {
+    font-size: 16px;
+    color: #555555;
+}
+
+.value {
+    font-weight: bold;
+    color: #2980b9;
+}
+
+a.settings-link, a.home-link, a.endpoint-link {
+    color: #3498db;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
+    color: #e74c3c;
+}
+
+.nav-section {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.endpoints-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.endpoint-item {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.label {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.checkbox-label {
+    margin-bottom: 0;
+    width: auto; /* Убираем фиксированную ширину для чекбоксов */
+}
+
+.input-field {
+    padding: 8px;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #fafafa;
+    transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.checkbox {
+    margin: 0;
+}
+
+.description {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+.checkbox-desc {
+    margin-top: 0;
+    flex-grow: 1; /* Описание занимает оставшееся место */
+}
+
+.submit-button {
+    background-color: #3498db;
+    color: #ffffff;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #2980b9;
+}
+
+.system-icon {
+    max-width: 32px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.status-section {
+    margin-bottom: 20px;
+}
+
+.status-line, .game-line, .system-line {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.label {
+    display: inline-block;
+    width: 200px;
+}
+
+.thumbnail {
+    /*max-width: 200px;*/
+    display: block;
+    margin: 0 auto;
+}
+
+.no-thumbnail {
+    font-size: 16px;
+    color: #555555;
+}
+.thumbnail-container {
+    max-width: 100%;
+}
+
+.thumbnail-section {
+    margin-top: 20px;
+    text-align: center;
+}
+.index-container .thumbnail{
+    max-width: 100%;
+}
+.donate-section {
+    margin-top: 20px;
+    text-align: center;
+}
+.donate-text {
+    font-size: 16px;
+    color: #333333;
+}
+.donate-link {
+    color: #007bff;
+    text-decoration: none;
+}
+.donate-link:hover {
+    text-decoration: underline;
+}
+.donate-heart {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-left: 5px;
+}
