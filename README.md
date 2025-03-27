@@ -12,7 +12,6 @@ TrackGameName is a lightweight Windows tool designed to track and output RetroAr
 - Optional text file output (`game.txt`, `console.txt`, or `output.txt`) for application integration.
 - Configurable settings: RetroArch path, thumbnails folder, refresh interval, theme, and more.
 - System tray icon showing game/system info with an autorun option.
-- Donation support via [DonationAlerts](https://www.donationalerts.com/r/ork8bit) with a cute heart icon ❤️.
 
 ### Requirements
 - Windows operating system.
@@ -60,7 +59,6 @@ TrackGameName — это лёгкий инструмент для Windows, ко�
 - Опциональный вывод в текстовые файлы (`game.txt`, `console.txt` или `output.txt`) для интеграции с приложениями.
 - Настраиваемые параметры: путь к RetroArch, папка с миниатюрами, интервал обновления, тема и др.
 - Иконка в системном трее с информацией об игре/системе и опцией автозапуска.
-- Поддержка через [DonationAlerts](https://www.donationalerts.com/r/ork8bit) с милым сердечком ❤️.
 
 ### Требования
 - Операционная система Windows.
