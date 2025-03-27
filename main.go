@@ -517,7 +517,7 @@ func startWebServer(port int) {
 				return
 			}
 			if config.Autorun != (r.FormValue("autorun") != "on") {
-				if err := setAutorun(config.Autorun, "RetroArchOBSSync"); err != nil {
+				if err := setAutorun(config.Autorun, "TrackGameName"); err != nil {
 					log.Printf("Ошибка изменения автозагрузки: %v", err)
 				}
 			}
@@ -535,7 +535,7 @@ func startWebServer(port int) {
 }
 
 func main() {
-	logFile, err := os.OpenFile("retroarch_obs.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	logFile, err := os.OpenFile("trackgamename.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		os.Exit(1)
 	}
@@ -543,7 +543,7 @@ func main() {
 	log.SetOutput(logFile)
 	log.SetFlags(log.LstdFlags)
 
-	log.Println("Программа запущена")
+	log.Println("TrackGameName запущен")
 
 	cfg, err := ini.Load("config.ini")
 	if err != nil {
@@ -626,7 +626,7 @@ func main() {
 		}
 	}
 
-	if err := setAutorun(config.Autorun, "RetroArchOBSSync"); err != nil {
+	if err := setAutorun(config.Autorun, "TrackGameName"); err != nil {
 		log.Printf("Ошибка настройки автозагрузки при запуске: %v", err)
 	}
 
@@ -657,8 +657,8 @@ func onReady(lplPath string, savePath string) func() {
 			log.Println("Иконки не загружены, используется стандартная")
 		}
 
-		systray.SetTitle("RetroArch OBS Sync")
-		systray.SetTooltip("RetroArch OBS Sync")
+		systray.SetTitle("TrackGameName")
+		systray.SetTooltip("TrackGameName")
 		log.Println("Systray инициализирован")
 
 		gameItem := systray.AddMenuItem("Игра: Не определена", "Текущая игра")
