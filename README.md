@@ -191,7 +191,7 @@ Below is a guide to all settings available on the `/settings` page and how they 
   - Default: `0`
   - Note: Invalid values are ignored.
  
-    ## Настройки через веб-интерфейс (`/settings`)
+## Настройки через веб-интерфейс (`/settings`)
 
 Ниже описаны все поля настроек на странице `/settings` и их соответствие параметрам в файле `config.ini`.
 
