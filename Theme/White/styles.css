@@ -10,7 +10,18 @@ body.main-body {
     align-items: center;
     min-height: 100vh;
 }
+body.main-body.info {
+    background-color: #00FF00;
+}
+body.main-body.page-game,
+body.main-body.page-all,
+body.main-body.page-system,
+body.main-body.page-thumbnail {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
 
+}
 .container {
     background-color: #ffffff;
     border-radius: 8px;
@@ -20,7 +31,14 @@ body.main-body {
     width: 100%;
     margin: 20px;
 }
-
+body.main-body.page-game .container,
+body.main-body.page-all .container,
+body.main-body.page-system .container,
+body.main-body.page-thumbnail .container {
+    max-width: 100%;
+    width: auto;
+    box-shadow: none;
+}
 h2.main-title, h2.settings-title {
     color: #2c3e50;
     font-size: 24px;
@@ -137,7 +155,9 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-
+a.submit-button {
+    text-decoration: none;
+}
 .submit-button:hover {
     background-color: #2980b9;
 }

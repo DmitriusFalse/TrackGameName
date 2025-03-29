@@ -466,6 +466,7 @@ func startWebServer(port int) {
 				Languages: getAvailableLanguages(),
 				T:         translations,
 			}
+
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			if err := templates["settings.html"].Execute(w, data); err != nil {
 				log.Printf("Error rendering settings.html: %v", err)
