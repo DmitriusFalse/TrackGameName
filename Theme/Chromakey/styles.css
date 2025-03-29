@@ -62,9 +62,15 @@ h3.endpoints-title {
 .game-text, .system-text {
     font-size: 16px;
     color: #ff0000;
+}
+body.main-body.page-game .system-text,
+body.main-body.page-all .system-text,
+body.main-body.page-system .system-text,
+body.main-body.page-game .game-text,
+body.main-body.page-all .game-text,
+body.main-body.page-system .game-text {
     font-size: 50px;
 }
-
 .value {
     font-weight: bold;
     color: #61dafb;
