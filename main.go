@@ -313,11 +313,39 @@ func startWebServer(port int) {
 				}
 			}
 		}
+
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		// Рендерим шаблон
 		if err := templates["index.html"].Execute(w, data); err != nil {
 			log.Printf("Error rendering index.html: %v", err)
 			http.Error(w, "Server error", http.StatusInternalServerError)
+			return
 		}
+		footer := `
+        <script>
+            var container = document.querySelector(".container.index-container");
+            if (container) {
+                container.innerHTML += '<div id="donate-section" style="text-align: center; padding: 10px; font-size: 14px;">' +
+                    '<p class="donate-text">Please consider supporting the project with a donation: <a class="donate-link" href="https://www.donationalerts.com/r/ork8bit">DonationAlerts</a>' +
+					'<img src="/theme/heart.png" alt="Heart" class="donate-heart"></p>'+
+                    '<p class="donate-text">©ork8bit aka Dmitriy Anatolyevich | <a class="donate-link" href="mailto:dmitrius.true@proton.me">dmitrius.true@proton.me</a></p>' +
+                    '</div>';
+            }
+            function protectFooter() {
+                var container = document.querySelector(".container.index-container");
+                var footer = document.getElementById("donate-section");
+                if (!footer || footer.style.display === "none" || !container.querySelector("#donate-section")) {
+                    container.innerHTML += '<div id="donate-section" style="text-align: center; padding: 10px; font-size: 14px;">' +
+                        '<p class="donate-text">Please consider supporting the project with a donation: <a class="donate-link" href="https://www.donationalerts.com/r/ork8bit">DonationAlerts</a>' +
+						'<img src="/theme/heart.png" alt="Heart" class="donate-heart"></p>'+
+                        '<p class="donate-text">©ork8bit aka Dmitriy Anatolyevich | <a class="donate-link" href="mailto:dmitrius.true@proton.me">dmitrius.true@proton.me</a></p>' +
+                        '</div>';
+                }
+            }
+            setInterval(protectFooter, 1000); // Проверка каждую секунду
+        </script>
+    `
+		w.Write([]byte(footer))
 	})
 
 	http.HandleFunc("/game", func(w http.ResponseWriter, r *http.Request) {

@@ -62,5 +62,6 @@
   "system_updated": "System updated: %s",
   "data_updated_output": "Data updated in output.txt: %s",
   "web_page_opened": "Main page opened in browser",
-  "app_exited": "Program closed"
+  "app_exited": "Program closed",
+  "donate_message": "Please consider supporting the project with a donation:"
 }

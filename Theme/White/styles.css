@@ -210,6 +210,9 @@ a.submit-button {
     font-size: 16px;
     color: #333333;
 }
+p.donate-text {
+    margin: 0;
+}
 .donate-link {
     color: #007bff;
     text-decoration: none;
@@ -217,6 +220,7 @@ a.submit-button {
 .donate-link:hover {
     text-decoration: underline;
 }
+
 .donate-heart {
     width: 16px;
     height: 16px;

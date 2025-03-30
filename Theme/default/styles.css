@@ -218,6 +218,9 @@ a.submit-button {
     font-size: 16px;
     color: #737272;
 }
+p.donate-text {
+    margin: 0;
+}
 .donate-link {
     color: #1e90ff;
     text-decoration: none;
