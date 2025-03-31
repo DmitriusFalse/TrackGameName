@@ -246,6 +246,96 @@ func getAvailableLanguages() []string {
 	return languages
 }
 
+// Новая функция для рендеринга шаблонов
+func renderTemplate(w http.ResponseWriter, tmplName string, data interface{}) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := templates[tmplName].Execute(w, data); err != nil {
+		log.Printf("Error rendering %s: %v", tmplName, err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+	}
+}
+
+// Новая функция для работы с configMutex
+func withConfigLock(fn func()) {
+	configMutex.RLock()
+	defer configMutex.RUnlock()
+	fn()
+}
+
+// Новая функция для записи данных в файлы
+func writeOutputFiles(savePath, gameName, consoleName string, saveToOneFile bool) {
+	if saveToOneFile {
+		output := consoleName + ": " + gameName
+		if err := os.WriteFile(filepath.Join(savePath, "output.txt"), []byte(output), 0644); err == nil {
+			log.Printf(translations["data_updated_output"], output)
+		} else {
+			log.Printf("Error writing to output.txt: %v", err)
+		}
+	} else {
+		if err := os.WriteFile(filepath.Join(savePath, "game.txt"), []byte(gameName), 0644); err == nil {
+			log.Printf(translations["game_updated"], gameName)
+		} else {
+			log.Printf("Error writing to game.txt: %v", err)
+		}
+		if err := os.WriteFile(filepath.Join(savePath, "console.txt"), []byte(consoleName), 0644); err == nil {
+			log.Printf(translations["system_updated"], consoleName)
+		} else {
+			log.Printf("Error writing to console.txt: %v", err)
+		}
+	}
+}
+
+// Новая функция для очистки файлов
+func clearOutputFiles(savePath string, saveToOneFile bool) {
+	if saveToOneFile {
+		if err := os.WriteFile(filepath.Join(savePath, "output.txt"), []byte(""), 0644); err != nil {
+			log.Printf("Error clearing output.txt: %v", err)
+		} else {
+			log.Println(translations["data_cleared_output"])
+		}
+	} else {
+		if err := os.WriteFile(filepath.Join(savePath, "game.txt"), []byte(""), 0644); err != nil {
+			log.Printf("Error clearing game.txt: %v", err)
+		} else {
+			log.Println(translations["data_cleared_game"])
+		}
+		if err := os.WriteFile(filepath.Join(savePath, "console.txt"), []byte(""), 0644); err != nil {
+			log.Printf("Error clearing console.txt: %v", err)
+		} else {
+			log.Println(translations["data_cleared_console"])
+		}
+	}
+}
+
+// Функция для получения пути к миниатюре
+func getThumbnailPath(config Config, currentConsole, currentGame, theme string) (string, string, string) {
+	var thumbnailPath, thumbnailWidth, thumbnailHeight string
+	if config.EnableThumbnails && config.ThumbnailsPath != "" && currentConsole != "" && currentGame != "" {
+		currentGame = strings.TrimSpace(currentGame)
+		currentConsole = strings.TrimSpace(currentConsole)
+		fullPath := filepath.Join(config.ThumbnailsPath, currentConsole, "Named_Titles", currentGame+".png")
+		if _, err := os.Stat(fullPath); !os.IsNotExist(err) {
+			thumbnailPath = fmt.Sprintf("/thumbnails/%s/Named_Titles/%s.png", currentConsole, currentGame)
+		} else {
+			thumbnailPath = fmt.Sprintf("/theme/%s/noimage.png", theme)
+		}
+		if config.ThumbnailSize != "" && config.ThumbnailSize != "0" {
+			parts := strings.Split(config.ThumbnailSize, "x")
+			if len(parts) == 2 {
+				if parts[0] != "" && parts[1] != "" {
+					thumbnailWidth = parts[0] + "px"
+					thumbnailHeight = parts[1] + "px"
+				} else if parts[0] != "" {
+					thumbnailWidth = parts[0] + "px"
+				} else if parts[1] != "" {
+					thumbnailHeight = parts[1] + "px"
+				}
+			}
+		}
+	}
+	return thumbnailPath, thumbnailWidth, thumbnailHeight
+}
+
 func startWebServer(port int) {
 	addr := fmt.Sprintf(":%d", port)
 
@@ -253,81 +343,55 @@ func startWebServer(port int) {
 	http.Handle("/theme/", http.StripPrefix("/theme/", http.FileServer(http.Dir(themePath))))
 
 	http.HandleFunc("/thumbnails/", func(w http.ResponseWriter, r *http.Request) {
-		configMutex.RLock()
-		defer configMutex.RUnlock()
-		if !config.EnableThumbnails || config.ThumbnailsPath == "" {
-			http.Error(w, "Thumbnails are disabled or path not set", http.StatusNotFound)
-			return
-		}
-		http.StripPrefix("/thumbnails/", http.FileServer(http.Dir(config.ThumbnailsPath))).ServeHTTP(w, r)
+		withConfigLock(func() {
+			if !config.EnableThumbnails || config.ThumbnailsPath == "" {
+				http.Error(w, "Thumbnails are disabled or path not set", http.StatusNotFound)
+				return
+			}
+			http.StripPrefix("/thumbnails/", http.FileServer(http.Dir(config.ThumbnailsPath))).ServeHTTP(w, r)
+		})
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		configMutex.RLock()
-		defer configMutex.RUnlock()
-		translations, err := loadTranslations(config.Language)
-		if err != nil {
-			log.Printf("Error loading translations: %v", err)
-			http.Error(w, "Server error", http.StatusInternalServerError)
-			return
-		}
-		data := struct {
-			RefreshInterval  int
-			Running          bool
-			CurrentGame      string
-			CurrentConsole   string
-			Theme            string
-			T                Translations
-			EnableThumbnails bool
-			ThumbnailPath    string
-			ThumbnailWidth   string
-			ThumbnailHeight  string
-		}{
-			RefreshInterval:  config.RefreshInterval,
-			Running:          isRetroarchRunning(),
-			CurrentGame:      currentGame,
-			CurrentConsole:   currentConsole,
-			Theme:            config.Theme,
-			T:                translations,
-			EnableThumbnails: config.EnableThumbnails,
-			ThumbnailPath:    "",
-			ThumbnailWidth:   "",
-			ThumbnailHeight:  "",
-		}
-		if config.EnableThumbnails && config.ThumbnailsPath != "" && currentConsole != "" && currentGame != "" {
-			thumbnailPath := filepath.Join(config.ThumbnailsPath, currentConsole, currentGame+".png")
-			if _, err := os.Stat(thumbnailPath); !os.IsNotExist(err) {
-				data.ThumbnailPath = fmt.Sprintf("/thumbnails/%s/%s.png", currentConsole, currentGame)
-				if config.ThumbnailSize != "" && config.ThumbnailSize != "0" {
-					parts := strings.Split(config.ThumbnailSize, "x")
-					if len(parts) == 2 {
-						if parts[0] != "" && parts[1] != "" {
-							data.ThumbnailWidth = parts[0] + "px"
-							data.ThumbnailHeight = parts[1] + "px"
-						} else if parts[0] != "" {
-							data.ThumbnailWidth = parts[0] + "px"
-						} else if parts[1] != "" {
-							data.ThumbnailHeight = parts[1] + "px"
-						}
-					}
-				}
+		withConfigLock(func() {
+			translations, err := loadTranslations(config.Language)
+			if err != nil {
+				log.Printf("Error loading translations: %v", err)
+				http.Error(w, "Server error", http.StatusInternalServerError)
+				return
 			}
-		}
-
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		// Рендерим шаблон
-		if err := templates["index.html"].Execute(w, data); err != nil {
-			log.Printf("Error rendering index.html: %v", err)
-			http.Error(w, "Server error", http.StatusInternalServerError)
-			return
-		}
-		footer := `
+			data := struct {
+				RefreshInterval  int
+				Running          bool
+				CurrentGame      string
+				CurrentConsole   string
+				Theme            string
+				T                Translations
+				EnableThumbnails bool
+				ThumbnailPath    string
+				ThumbnailWidth   string
+				ThumbnailHeight  string
+			}{
+				RefreshInterval:  config.RefreshInterval,
+				Running:          isRetroarchRunning(),
+				CurrentGame:      currentGame,
+				CurrentConsole:   currentConsole,
+				Theme:            config.Theme,
+				T:                translations,
+				EnableThumbnails: config.EnableThumbnails,
+				ThumbnailPath:    "",
+				ThumbnailWidth:   "",
+				ThumbnailHeight:  "",
+			}
+			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGame, config.Theme)
+			renderTemplate(w, "index.html", data)
+			footer := `
         <script>
             var container = document.querySelector(".container.index-container");
             if (container) {
                 container.innerHTML += '<div id="donate-section" style="text-align: center; padding: 10px; font-size: 14px;">' +
                     '<p class="donate-text">Please consider supporting the project with a donation: <a class="donate-link" href="https://www.donationalerts.com/r/ork8bit">DonationAlerts</a>' +
-					'<img src="/theme/heart.png" alt="Heart" class="donate-heart"></p>'+
+                    '<img src="/theme/heart.png" alt="Heart" class="donate-heart"></p>' +
                     '<p class="donate-text">©ork8bit aka Dmitriy Anatolyevich | <a class="donate-link" href="mailto:dmitrius.true@proton.me">dmitrius.true@proton.me</a></p>' +
                     '</div>';
             }
@@ -337,138 +401,105 @@ func startWebServer(port int) {
                 if (!footer || footer.style.display === "none" || !container.querySelector("#donate-section")) {
                     container.innerHTML += '<div id="donate-section" style="text-align: center; padding: 10px; font-size: 14px;">' +
                         '<p class="donate-text">Please consider supporting the project with a donation: <a class="donate-link" href="https://www.donationalerts.com/r/ork8bit">DonationAlerts</a>' +
-						'<img src="/theme/heart.png" alt="Heart" class="donate-heart"></p>'+
+                        '<img src="/theme/heart.png" alt="Heart" class="donate-heart"></p>' +
                         '<p class="donate-text">©ork8bit aka Dmitriy Anatolyevich | <a class="donate-link" href="mailto:dmitrius.true@proton.me">dmitrius.true@proton.me</a></p>' +
                         '</div>';
                 }
             }
-            setInterval(protectFooter, 1000); // Проверка каждую секунду
+            setInterval(protectFooter, 1000);
         </script>
     `
-		w.Write([]byte(footer))
+			w.Write([]byte(footer))
+		})
 	})
 
 	http.HandleFunc("/game", func(w http.ResponseWriter, r *http.Request) {
-		configMutex.RLock()
-		defer configMutex.RUnlock()
-		data := struct {
-			RefreshInterval int
-			CurrentGame     string
-			Theme           string
-		}{
-			RefreshInterval: config.RefreshInterval,
-			CurrentGame:     currentGame,
-			Theme:           config.Theme,
-		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		if err := templates["game.html"].Execute(w, data); err != nil {
-			log.Printf("Error rendering game.html: %v", err)
-			http.Error(w, "Server error", http.StatusInternalServerError)
-		}
+		withConfigLock(func() {
+			data := struct {
+				RefreshInterval int
+				CurrentGame     string
+				Theme           string
+			}{
+				RefreshInterval: config.RefreshInterval,
+				CurrentGame:     currentGame,
+				Theme:           config.Theme,
+			}
+			renderTemplate(w, "game.html", data)
+		})
 	})
 
 	http.HandleFunc("/system", func(w http.ResponseWriter, r *http.Request) {
-		configMutex.RLock()
-		defer configMutex.RUnlock()
-		data := struct {
-			RefreshInterval int
-			SystemIcon      int
-			CurrentConsole  string
-			IconFile        string
-			Theme           string
-		}{
-			RefreshInterval: config.RefreshInterval,
-			SystemIcon:      config.SystemIcon,
-			CurrentConsole:  currentConsole,
-			Theme:           config.Theme,
-		}
-		if config.SystemIcon > 0 && currentConsole != "" {
-			if iconFile, exists := config.Systems[currentConsole]; exists {
-				data.IconFile = iconFile
+		withConfigLock(func() {
+			data := struct {
+				RefreshInterval int
+				SystemIcon      int
+				CurrentConsole  string
+				IconFile        string
+				Theme           string
+			}{
+				RefreshInterval: config.RefreshInterval,
+				SystemIcon:      config.SystemIcon,
+				CurrentConsole:  currentConsole,
+				Theme:           config.Theme,
 			}
-		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		if err := templates["system.html"].Execute(w, data); err != nil {
-			log.Printf("Error rendering system.html: %v", err)
-			http.Error(w, "Server error", http.StatusInternalServerError)
-		}
+			if config.SystemIcon > 0 && currentConsole != "" {
+				if iconFile, exists := config.Systems[currentConsole]; exists {
+					data.IconFile = iconFile
+				}
+			}
+			renderTemplate(w, "system.html", data)
+		})
 	})
 
 	http.HandleFunc("/all", func(w http.ResponseWriter, r *http.Request) {
-		configMutex.RLock()
-		defer configMutex.RUnlock()
-		data := struct {
-			RefreshInterval int
-			SystemIcon      int
-			CurrentConsole  string
-			CurrentGame     string
-			IconFile        string
-			Theme           string
-		}{
-			RefreshInterval: config.RefreshInterval,
-			SystemIcon:      config.SystemIcon,
-			CurrentConsole:  currentConsole,
-			CurrentGame:     currentGame,
-			Theme:           config.Theme,
-		}
-		if config.SystemIcon > 0 && currentConsole != "" {
-			if iconFile, exists := config.Systems[currentConsole]; exists {
-				data.IconFile = iconFile
+		withConfigLock(func() {
+			data := struct {
+				RefreshInterval int
+				SystemIcon      int
+				CurrentConsole  string
+				CurrentGame     string
+				IconFile        string
+				Theme           string
+			}{
+				RefreshInterval: config.RefreshInterval,
+				SystemIcon:      config.SystemIcon,
+				CurrentConsole:  currentConsole,
+				CurrentGame:     currentGame,
+				Theme:           config.Theme,
 			}
-		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		if err := templates["all.html"].Execute(w, data); err != nil {
-			log.Printf("Error rendering all.html: %v", err)
-			http.Error(w, "Server error", http.StatusInternalServerError)
-		}
+			if config.SystemIcon > 0 && currentConsole != "" {
+				if iconFile, exists := config.Systems[currentConsole]; exists {
+					data.IconFile = iconFile
+				}
+			}
+			renderTemplate(w, "all.html", data)
+		})
 	})
 
 	http.HandleFunc("/thumbnails", func(w http.ResponseWriter, r *http.Request) {
-		configMutex.RLock()
-		defer configMutex.RUnlock()
-		data := struct {
-			RefreshInterval  int
-			CurrentGame      string
-			CurrentConsole   string
-			Theme            string
-			EnableThumbnails bool
-			ThumbnailPath    string
-			ThumbnailWidth   string
-			ThumbnailHeight  string
-		}{
-			RefreshInterval:  config.RefreshInterval,
-			CurrentGame:      currentGame,
-			CurrentConsole:   currentConsole,
-			Theme:            config.Theme,
-			EnableThumbnails: config.EnableThumbnails,
-			ThumbnailPath:    "",
-			ThumbnailWidth:   "",
-			ThumbnailHeight:  "",
-		}
-		if config.EnableThumbnails && config.ThumbnailsPath != "" && currentConsole != "" && currentGame != "" {
-			thumbnailPath := filepath.Join(config.ThumbnailsPath, currentConsole, currentGame+".png")
-			if _, err := os.Stat(thumbnailPath); !os.IsNotExist(err) {
-				data.ThumbnailPath = fmt.Sprintf("/thumbnails/%s/%s.png", currentConsole, currentGame)
-				if config.ThumbnailSize != "" && config.ThumbnailSize != "0" {
-					parts := strings.Split(config.ThumbnailSize, "x")
-					if len(parts) == 2 {
-						if parts[0] != "" && parts[1] != "" {
-							data.ThumbnailWidth = parts[0] + "px"
-							data.ThumbnailHeight = parts[1] + "px"
-						} else if parts[0] != "" {
-							data.ThumbnailWidth = parts[0] + "px"
-						} else if parts[1] != "" {
-							data.ThumbnailHeight = parts[1] + "px"
-						}
-					}
-				}
+		withConfigLock(func() {
+			data := struct {
+				RefreshInterval  int
+				CurrentGame      string
+				CurrentConsole   string
+				Theme            string
+				EnableThumbnails bool
+				ThumbnailPath    string
+				ThumbnailWidth   string
+				ThumbnailHeight  string
+			}{
+				RefreshInterval:  config.RefreshInterval,
+				CurrentGame:      currentGame,
+				CurrentConsole:   currentConsole,
+				Theme:            config.Theme,
+				EnableThumbnails: config.EnableThumbnails,
+				ThumbnailPath:    "",
+				ThumbnailWidth:   "",
+				ThumbnailHeight:  "",
 			}
-		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		if err := templates["thumbnails.html"].Execute(w, data); err != nil {
-			log.Printf("Error rendering thumbnails.html: %v", err)
-			http.Error(w, "Server error", http.StatusInternalServerError)
-		}
+			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGame, config.Theme)
+			renderTemplate(w, "thumbnails.html", data)
+		})
 	})
 
 	http.HandleFunc("/settings", func(w http.ResponseWriter, r *http.Request) {
@@ -494,12 +525,7 @@ func startWebServer(port int) {
 				Languages: getAvailableLanguages(),
 				T:         translations,
 			}
-
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			if err := templates["settings.html"].Execute(w, data); err != nil {
-				log.Printf("Error rendering settings.html: %v", err)
-				http.Error(w, "Server error", http.StatusInternalServerError)
-			}
+			renderTemplate(w, "settings.html", data)
 		} else if r.Method == "POST" {
 			if err := r.ParseForm(); err != nil {
 				http.Error(w, "Error parsing form", http.StatusBadRequest)
@@ -533,7 +559,7 @@ func startWebServer(port int) {
 			newLanguage := r.FormValue("language")
 			if _, err := os.Stat(filepath.Join(langPath, newLanguage+".json")); !os.IsNotExist(err) {
 				config.Language = newLanguage
-				translations, err = loadTranslations(config.Language) // Обновляем глобальные переводы
+				translations, err = loadTranslations(config.Language)
 				if err != nil {
 					log.Printf("Error reloading translations: %v", err)
 				}
@@ -719,24 +745,7 @@ func onReady(savePath string) func() {
 						log.Println(translations["retroarch_closed_icon"])
 						configMutex.RLock()
 						if config.OutputToFiles {
-							if config.SaveToOneFile {
-								if err := os.WriteFile(filepath.Join(savePath, "output.txt"), []byte(""), 0644); err != nil {
-									log.Printf("Error clearing output.txt: %v", err)
-								} else {
-									log.Println(translations["data_cleared_output"])
-								}
-							} else {
-								if err := os.WriteFile(filepath.Join(savePath, "game.txt"), []byte(""), 0644); err != nil {
-									log.Printf("Error clearing game.txt: %v", err)
-								} else {
-									log.Println(translations["data_cleared_game"])
-								}
-								if err := os.WriteFile(filepath.Join(savePath, "console.txt"), []byte(""), 0644); err != nil {
-									log.Printf("Error clearing console.txt: %v", err)
-								} else {
-									log.Println(translations["data_cleared_console"])
-								}
-							}
+							clearOutputFiles(savePath, config.SaveToOneFile)
 						}
 						configMutex.RUnlock()
 						gameItem.SetTitle(translations["process_not_running"])
@@ -771,28 +780,9 @@ func onReady(savePath string) func() {
 					if gamename != newGamename {
 						configMutex.RLock()
 						if config.OutputToFiles {
-							if config.SaveToOneFile {
-								output := consoleName + ": " + newGamename
-								if err := os.WriteFile(filepath.Join(currentSavePath, "output.txt"), []byte(output), 0644); err == nil {
-									log.Printf(translations["data_updated_output"], output)
-								} else {
-									log.Printf("Error writing to output.txt: %v", err)
-								}
-							} else {
-								if err := os.WriteFile(filepath.Join(currentSavePath, "game.txt"), []byte(newGamename), 0644); err == nil {
-									log.Printf(translations["game_updated"], newGamename)
-								} else {
-									log.Printf("Error writing to game.txt: %v", err)
-								}
-								if err := os.WriteFile(filepath.Join(currentSavePath, "console.txt"), []byte(consoleName), 0644); err == nil {
-									log.Printf(translations["system_updated"], consoleName)
-								} else {
-									log.Printf("Error writing to console.txt: %v", err)
-								}
-							}
+							writeOutputFiles(currentSavePath, newGamename, consoleName, config.SaveToOneFile)
 						}
 						configMutex.RUnlock()
-
 						gameItem.SetTitle("Game: " + newGamename)
 						consoleItem.SetTitle("System: " + consoleName)
 						gamename = newGamename

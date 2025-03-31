@@ -1,0 +1,90 @@
+<html>
+<head>
+	<link rel="stylesheet" href="/theme/{{.Config.Theme}}/styles.css">
+	<title>{{.T.settings}}</title>
+</head>
+<body class="main-body page-settings">
+<div class="container">
+	<h2 class="settings-title">{{.T.settings}}</h2>
+	<form method="POST" action="/settings" class="settings-form">
+		<div class="form-group autorun-group checkbox-group">
+			<label class="label checkbox-label">{{.T.autorun}}:</label>
+			<input type="checkbox" name="autorun" {{if .Config.Autorun}}checked{{end}} class="checkbox">
+			<span class="description checkbox-desc">{{.T.autorun_desc}}</span>
+		</div>
+		<div class="form-group theme-group">
+			<label class="label">{{.T.theme}}:</label>
+			<select name="theme" class="input-field">
+				{{range .Themes}}
+				<option value="{{.}}" {{if eq . $.Config.Theme}}selected{{end}}>{{.}}</option>
+				{{end}}
+			</select>
+			<span class="description">{{.T.theme_desc}}</span>
+		</div>
+		<div class="form-group language-group">
+			<label class="label">{{.T.language}}:</label>
+			<select name="language" class="input-field">
+				{{range .Languages}}
+				<option value="{{.}}" {{if eq . $.Config.Language}}selected{{end}}>{{.}}</option>
+				{{end}}
+			</select>
+			<span class="description">{{.T.language_desc}}</span>
+		</div>
+		<div class="form-group web-port-group">
+			<label class="label">{{.T.web_port}}:</label>
+			<input type="number" name="web_port" value="{{.Config.WebPort}}" min="1" max="65535" class="input-field">
+			<span class="description">{{.T.web_port_desc}}</span>
+		</div>
+		<div class="form-group retroarch-path-group">
+			<label class="label">{{.T.retroarch_path}}:</label>
+			<input type="text" name="retroarch_path" value="{{.Config.RetroarchPath}}" class="input-field">
+			<span class="description">{{.T.retroarch_path_desc}}</span>
+		</div>
+		<div class="form-group output-to-files-group checkbox-group">
+			<label class="label checkbox-label">{{.T.output_to_files}}:</label>
+			<input type="checkbox" name="output_to_files" {{if .Config.OutputToFiles}}checked{{end}} class="checkbox">
+			<span class="description checkbox-desc">{{.T.output_to_files_desc}}</span>
+		</div>
+		<div class="form-group save-path-group">
+			<label class="label">{{.T.save_path}}:</label>
+			<input type="text" name="save_path" value="{{.Config.SavePath}}" class="input-field">
+			<span class="description">{{.T.save_path_desc}}</span>
+		</div>
+		<div class="form-group save-to-one-file-group checkbox-group">
+			<label class="label checkbox-label">{{.T.save_to_one_file}}:</label>
+			<input type="checkbox" name="save_to_one_file" {{if .Config.SaveToOneFile}}checked{{end}} class="checkbox">
+			<span class="description checkbox-desc">{{.T.save_to_one_file_desc}}</span>
+		</div>
+		<div class="form-group system-icon-group">
+			<label class="label">{{.T.system_icon}}:</label>
+			<input type="number" name="system_icon" value="{{.Config.SystemIcon}}" min="0" max="2" class="input-field">
+			<span class="description">{{.T.system_icon_desc}}</span>
+		</div>
+		<div class="form-group refresh-interval-group">
+			<label class="label">{{.T.refresh_interval}}:</label>
+			<input type="number" name="refresh_interval" value="{{.Config.RefreshInterval}}" min="1" class="input-field">
+			<span class="description">{{.T.refresh_interval_desc}}</span>
+		</div>
+		<div class="form-group enable-thumbnails-group checkbox-group">
+			<label class="label checkbox-label">{{.T.enable_thumbnails}}:</label>
+			<input type="checkbox" name="enable_thumbnails" {{if .Config.EnableThumbnails}}checked{{end}} class="checkbox">
+			<span class="description checkbox-desc">{{.T.enable_thumbnails_desc}}</span>
+		</div>
+		<div class="form-group thumbnails-path-group">
+			<label class="label">{{.T.thumbnails_path}}:</label>
+			<input type="text" name="thumbnails_path" value="{{.Config.ThumbnailsPath}}" class="input-field">
+			<span class="description">{{.T.thumbnails_path_desc}}</span>
+		</div>
+		<div class="form-group thumbnail-size-group">
+			<label class="label">{{.T.thumbnail_size}}:</label>
+			<input type="text" name="thumbnail_size" value="{{.Config.ThumbnailSize}}" class="input-field">
+			<span class="description">{{.T.thumbnail_size_desc}}</span>
+		</div>
+		<input type="submit" value="{{.T.save}}" class="submit-button">
+		<div class="nav-section">
+			<a href="/" class="home-link">{{.T.home}}</a>
+		</div>
+	</form>
+</div>
+</body>
+</html>
