@@ -48,15 +48,16 @@ type Config struct {
 type Translations map[string]string
 
 var (
-	currentGame    string
-	currentConsole string
-	configMutex    sync.RWMutex
-	systemsPath    string
-	themePath      string
-	langPath       string
-	config         Config
-	templates      map[string]*template.Template
-	translations   Translations // Глобальная переменная для переводов
+	currentGame         string
+	currentGameFullName string
+	currentConsole      string
+	configMutex         sync.RWMutex
+	systemsPath         string
+	themePath           string
+	langPath            string
+	config              Config
+	templates           map[string]*template.Template
+	translations        Translations // Глобальная переменная для переводов
 )
 
 func findFirstLine(filePath, search string) (string, error) {
@@ -84,21 +85,29 @@ func cut(input, delimiter string, field int) string {
 	return ""
 }
 
-func extractValue(line, pattern string) string {
+func extractValue(line, pattern string) (string, string) {
 	startIdx := strings.Index(line, pattern)
 	if startIdx == -1 {
-		return ""
+		return "", ""
 	}
 	start := startIdx + len(pattern)
 	end := strings.Index(line[start:], `"`)
 	if end == -1 {
-		return ""
+		return "", ""
 	}
 	end += start
 	if end <= start {
-		return ""
+		return "", ""
 	}
-	return line[start:end]
+
+	// Полное название (всё между кавычек)
+	fullName := line[start:end]
+
+	// Короткое название (обрезаем до первого скобочного уточнения)
+	shortName := strings.Split(fullName, "(")[0]
+	shortName = strings.TrimSpace(shortName)
+
+	return shortName, fullName
 }
 
 func isRetroarchRunning() bool {
@@ -383,7 +392,8 @@ func startWebServer(port int) {
 				ThumbnailWidth:   "",
 				ThumbnailHeight:  "",
 			}
-			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGame, config.Theme)
+			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGameFullName, config.Theme)
+			fmt.Println(data.ThumbnailPath)
 			renderTemplate(w, "index.html", data)
 			footer := `
         <script>
@@ -497,7 +507,8 @@ func startWebServer(port int) {
 				ThumbnailWidth:   "",
 				ThumbnailHeight:  "",
 			}
-			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGame, config.Theme)
+			fmt.Println(currentGameFullName)
+			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGameFullName, config.Theme)
 			renderTemplate(w, "thumbnails.html", data)
 		})
 	})
@@ -773,9 +784,9 @@ func onReady(savePath string) func() {
 						time.Sleep(1 * time.Second)
 						continue
 					}
-
-					newGamename := cut(extractValue(newGameLine, `"label": "`), "(", 0)
-					consoleName := cut(extractValue(newCoreLine, `"db_name": "`), ".", 0)
+					newGamename, newGameFullName := extractValue(newGameLine, `"label": "`)
+					shortCoreName, _ := extractValue(newCoreLine, `"db_name": "`)
+					consoleName := cut(shortCoreName, ".", 0)
 
 					if gamename != newGamename {
 						configMutex.RLock()
@@ -787,6 +798,7 @@ func onReady(savePath string) func() {
 						consoleItem.SetTitle("System: " + consoleName)
 						gamename = newGamename
 						currentGame = newGamename
+						currentGameFullName = newGameFullName
 						currentConsole = consoleName
 					}
 				}
