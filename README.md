@@ -7,7 +7,7 @@ TrackGameName is a lightweight Windows tool designed to track and output RetroAr
 
 ### Features
 - Real-time monitoring of RetroArch to display the current game and system.
-- Endpoints (`/game`, `/system`, `/all`, `/thumbnails`) for seamless integration with applications like OBS Studio.
+- Endpoints(Web address for Widgets) (`/game`, `/system`, `/all`, `/thumbnails`) for seamless integration with applications like OBS Studio.
 - Game thumbnails with customizable sizes (e.g., `200x200`, `200x`, `x200`, or original).
 - Optional text file output (`game.txt`, `console.txt`, or `output.txt`) for application integration.
 - Configurable settings: RetroArch path, thumbnails folder, refresh interval, theme, and more.
@@ -21,24 +21,44 @@ TrackGameName is a lightweight Windows tool designed to track and output RetroAr
 1. Download the latest installer from the [Releases](https://github.com/DmitriusFalse/TrackGameName/releases) page (`trackgamename-vX.X.X-setup.exe`).
 2. Run the installer and follow the on-screen instructions.
 3. Launch the program and open `http://localhost:3489/` in your browser to access the web interface.
-
-### Building from Source (Optional)
-If you prefer to build the executable yourself:
-1. Clone the repository:
-   ```cmd
-   git clone https://github.com/DmitriusFalse/TrackGameName.git
-   cd trackgamename
-2. Install Go 1.16+.
-3. Build the executable:
-   ```cmd
-   go build -ldflags="-H=windowsgui" -o trackgamename.exe
-4. Run the program: trackgamename.exe
    
 ### Configuration
-- Edit `config.ini` to set your RetroArch path, thumbnails folder, and other preferences.
-- Place thumbnail images in the specified folder (e.g., `C:\thumbnails\<system>\<game>.png`).
-- Alternatively, configure settings via the web interface at `/settings`.
+Configure the program via the web interface at `/settings`, accessible at `http://localhost:<web_port>/settings` (default port: `3489`). Here you can set:
 
+- **RetroArch Path** (`retroarch_path`):  
+  Path to your RetroArch installation (e.g., `C:\RetroArch-Win64`). This is where the program looks for `content_history.lpl` to track the current game.
+- **Save Path** (`save_path`):  
+  Directory where output files (e.g., `game.txt`, `console.txt`) and theme/system folders are stored. If left empty, defaults to the current working directory.
+- **Save to One File** (`save_to_one_file`):  
+  Toggle to save game and console info into a single `output.txt` file (e.g., `Nintendo: Super Mario Bros`) instead of separate `game.txt` and `console.txt` files.
+- **Autorun** (`autorun`):  
+  Enable or disable automatic startup with Windows. When enabled, the program is added to the Windows registry autorun list.
+- **Output to Files** (`output_to_files`):  
+  Toggle to enable or disable writing game and console info to text files in the save path.
+- **Web Port** (`web_port`):  
+  Port for the web server (e.g., `3489`). Must be a number between 1 and 65535. Restart the program for changes to take effect.
+- **System Icon** (`system_icon`):  
+  Choose how system icons are displayed (0 = disabled, 1 = small, 2 = large). Icons are sourced from the `systems` section of the configuration.
+- **Refresh Interval** (`refresh_interval`):  
+  Time in seconds between updates of game and console info (e.g., `20`). Must be at least 1 second.
+- **Theme** (`theme`):  
+  Select the visual theme for the web interface (e.g., `default`). Available themes are detected from the `Theme` folder in the save path.
+- **Language** (`language`):  
+  Choose the interface language (e.g., `en` for English). Available languages are detected from `.json` files in the `lang` folder.
+- **Thumbnails Path** (`thumbnails_path`):  
+  Directory containing your thumbnails (e.g., `C:\RetroArch-Win64\thumbnails`). Thumbnails must follow the RetroArch structure.
+- **Enable Thumbnails** (`enable_thumbnails`):  
+  Toggle thumbnail display on or off in the web interface.
+- **Thumbnail Size** (`thumbnail_size`):  
+  Set the display size for thumbnails (e.g., `200x200`). Format is `widthxheight` in pixels; leave blank or set to `0` for default size.
+
+Place thumbnail images in the specified thumbnails folder using the RetroArch structure:  
+`<thumbnails_path>\<system>\Named_Titles\<game>.png`.  
+For example:
+`C:\RetroArch-Win64\thumbnails\Atari - 2600\Named_Titles\Q_bert's Qubes.png`
+- The `<game>` part must match the full game name from `content_history.lpl`, including region and disc info (e.g., `Armored Core - Master of Arena (USA) (Disc 1)`).
+
+If a thumbnail is not found, the program will display `noimage.png` from the theme folder (e.g., `Theme\default\noimage.png`). Ensure this file exists in your selected theme directory.
 ### Support
 If you enjoy this tool, please consider supporting me on [DonationAlerts](https://www.donationalerts.com/r/ork8bit) ❤️.
 
