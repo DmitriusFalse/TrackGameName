@@ -221,7 +221,7 @@ Below is a guide to all settings available on the `/settings` page and how they 
   - Example value: `D:\thumbnails`
   - Matches in `config.ini`: `thumbnails_path`
   - Default: Empty string (thumbnails disabled)
-  - Note: Format: `<system>\<game>.png`.
+  - Note: Format: `<thumbnails_path>\<system>\Named_Titles\<game>.png`. The `<game>` part must match the full game name from `content_history.lpl`, including region and disc info (e.g., `Armored Core - Master of Arena (USA) (Disc 1)`)
 
 - **Enable Thumbnails**
   - Description: Enables searching and displaying game thumbnails.
@@ -229,6 +229,7 @@ Below is a guide to all settings available on the `/settings` page and how they 
   - Matches in `config.ini`: `enable_thumbnails` (`true`/`false`)
   - Default: Off (`false`)
   - Note: Requires a valid `thumbnails_path`.
+
 
 - **Thumbnail Size**
   - Description: Size of thumbnails in pixels on `/thumbnails` and the main page.
@@ -320,7 +321,7 @@ Below is a guide to all settings available on the `/settings` page and how they 
   - Пример значения: `D:\thumbnails`
   - Соответствие в `config.ini`: `thumbnails_path`
   - По умолчанию: Пустая строка (миниатюры отключены)
-  - Примечание: Формат: `<система>\<игра>.png`.
+  - Примечание: Формат: `<system>\<game>.png`. Часть `<game>` должна совпадать с полным названием игры из `content_history.lpl`, включая регион и информацию о диске (например, `Armored Core - Master of Arena (USA) (Disc 1)`). Если миниатюра не найдена, программа отобразит `noimage.png` из папки темы (например, `Theme\default\noimage.png`). Убедитесь, что этот файл присутствует в директории выбранной темы.
 
 - **Включить миниатюры (`Enable Thumbnails`)**
   - Описание: Включает поиск и отображение миниатюр игр.
