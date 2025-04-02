@@ -392,7 +392,7 @@ func startWebServer(port int) {
 				ThumbnailWidth:   "",
 				ThumbnailHeight:  "",
 			}
-			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGameFullName, config.Theme)
+			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGame, config.Theme)
 			fmt.Println(data.ThumbnailPath)
 			renderTemplate(w, "index.html", data)
 			footer := `
@@ -507,8 +507,7 @@ func startWebServer(port int) {
 				ThumbnailWidth:   "",
 				ThumbnailHeight:  "",
 			}
-			fmt.Println(currentGameFullName)
-			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGameFullName, config.Theme)
+			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGame, config.Theme)
 			renderTemplate(w, "thumbnails.html", data)
 		})
 	})
