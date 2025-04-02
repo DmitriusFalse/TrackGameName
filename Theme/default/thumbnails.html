@@ -9,13 +9,13 @@
 <body class="main-body page-thumbnail info">
 <div class="container thumbnail-container">
     {{range $index, $path := .ThumbnailPaths}}
-    <img src="{{$path}}" class="thumbnail" style="width: {{$.ThumbnailWidth}}; height: {{$.ThumbnailHeight}}; {{if ne $index 0}}opacity: 0;{{end}}" alt="Thumbnail">
+    <img src="{{$path}}" class="thumbnail" style="{{if ne $index 0}}opacity: 0;{{end}}" alt="Thumbnail">
     {{end}}
 </div>
 
 <script>
     const updateInterval = {{.UpdateInterval}} * 1000;
-    const fadeDuration = {{.FadeDuration}} * 1000; // Переводим в миллисекунды
+    const fadeDuration = {{.FadeDuration}} * 1000;
     const fadeType = "{{.FadeType}}";
     let lastGame = "{{.CurrentGame}}";
     let lastConsole = "{{.CurrentConsole}}";
@@ -37,9 +37,12 @@
             position: relative;
             display: grid;
             justify-items: center;
+            overflow: hidden;
+            transition: height ${fadeDuration / 1000}s ${fadeType};
         }
         .thumbnail {
             position: absolute;
+            object-fit: contain;
             transition: opacity ${fadeDuration / 1000}s ${fadeType};
         }
         .thumbnail.hidden {
@@ -51,16 +54,64 @@
     </style>
     `);
 
-    function setContainerSize(container, img) {
-        // Устанавливаем размер контейнера на основе натурального размера изображения
-        img.onload = () => {
-            container.style.width = img.naturalWidth + 'px';
-            container.style.height = img.naturalHeight + 'px';
-        };
-        // Если изображение уже загружено (например, из кэша), сразу задаём размер
-        if (img.complete) {
-            container.style.width = img.naturalWidth + 'px';
-            container.style.height = img.naturalHeight + 'px';
+    function setThumbnailSize(container, thumbnails, desiredWidth, desiredHeight) {
+        // Парсим желаемые размеры
+        const hasWidth = desiredWidth && desiredWidth !== "0";
+        const hasHeight = desiredHeight && desiredHeight !== "0";
+        const widthPx = hasWidth ? parseInt(desiredWidth) : null;
+        const heightPx = hasHeight ? parseInt(desiredHeight) : null;
+
+        // Находим максимальную ширину среди всех изображений
+        let maxWidth = 0;
+        thumbnails.forEach(img => {
+            if (img.complete) {
+                maxWidth = Math.max(maxWidth, img.naturalWidth);
+            } else {
+                img.onload = () => {
+                    maxWidth = Math.max(maxWidth, img.naturalWidth);
+                    applySize(thumbnails[currentThumbnailIndex], true); // Пересчитываем после загрузки
+                };
+            }
+        });
+
+        function applySize(currentImg, isReload = false) {
+            let finalWidth, finalHeight;
+            const aspectRatio = currentImg.naturalWidth / currentImg.naturalHeight;
+
+            if (hasWidth && hasHeight) {
+                // Жёсткий размер (например, 200x200)
+                finalWidth = widthPx;
+                finalHeight = heightPx;
+            } else if (hasWidth) {
+                // Фиксированная ширина (например, 200x), высота по соотношению
+                finalWidth = widthPx;
+                finalHeight = Math.round(widthPx / aspectRatio);
+            } else if (hasHeight) {
+                // Фиксированная высота (например, x367), ширина — максимальная
+                finalHeight = heightPx;
+                finalWidth = maxWidth;
+            } else {
+                // Натуральный размер с максимальной шириной
+                finalWidth = maxWidth;
+                finalHeight = Math.round(maxWidth / aspectRatio);
+            }
+
+            // Устанавливаем размеры картинке
+            currentImg.style.width = finalWidth + 'px';
+            currentImg.style.height = finalHeight + 'px';
+            // Устанавливаем размеры контейнеру
+            if (isReload || !container.style.width) {
+                container.style.width = finalWidth + 'px'; // Фиксируем ширину один раз или при перезагрузке
+            }
+            container.style.height = finalHeight + 'px'; // Высота меняется для каждой картинки
+        }
+
+        // Применяем размер для текущего изображения
+        const currentImg = thumbnails[currentThumbnailIndex];
+        if (currentImg.complete) {
+            applySize(currentImg);
+        } else {
+            currentImg.onload = () => applySize(currentImg);
         }
     }
 
@@ -97,31 +148,30 @@
                         img.src = '/theme/default/noimage.png?cache=' + Date.now();
                         img.className = 'thumbnail visible';
                         img.alt = 'No Thumbnail';
-                        img.style.width = data.thumbnail_width; // Устанавливаем через style
-                        img.style.height = data.thumbnail_height; // Устанавливаем через style
                         container.appendChild(img);
-                        setContainerSize(container, img);
+                        setThumbnailSize(container, [img], data.thumbnail_width, data.thumbnail_height);
                     } else {
+                        const thumbnails = [];
                         lastThumbnails.forEach((path, index) => {
                             const img = document.createElement('img');
                             img.src = path + '?cache=' + Date.now();
                             img.className = 'thumbnail ' + (index === 0 ? 'visible' : 'hidden');
                             img.alt = 'Thumbnail';
-                            img.style.width = data.thumbnail_width; // Устанавливаем через style
-                            img.style.height = data.thumbnail_height; // Устанавливаем через style
                             container.appendChild(img);
-                            if (index === 0) {
-                                setContainerSize(container, img);
-                            }
+                            thumbnails.push(img);
                         });
 
+                        // Устанавливаем размер для всех изображений сразу
+                        setThumbnailSize(container, thumbnails, data.thumbnail_width, data.thumbnail_height);
+
                         if (lastThumbnails.length > 1 && {{.AlternateThumbnails}}) {
-                            const thumbnails = container.querySelectorAll('.thumbnail');
+                            const thumbnailsElements = container.querySelectorAll('.thumbnail');
                             thumbnailInterval = setInterval(() => {
-                                thumbnails[currentThumbnailIndex].className = 'thumbnail hidden';
-                                currentThumbnailIndex = (currentThumbnailIndex + 1) % thumbnails.length;
-                                thumbnails[currentThumbnailIndex].className = 'thumbnail visible';
-                                setContainerSize(container, thumbnails[currentThumbnailIndex]);
+                                thumbnailsElements[currentThumbnailIndex].className = 'thumbnail hidden';
+                                currentThumbnailIndex = (currentThumbnailIndex + 1) % thumbnailsElements.length;
+                                thumbnailsElements[currentThumbnailIndex].className = 'thumbnail visible';
+                                // Пересчитываем только высоту для текущего изображения
+                                setThumbnailSize(container, thumbnailsElements, data.thumbnail_width, data.thumbnail_height);
                             }, {{.ThumbnailSwitchInterval}} * 1000);
                         }
                     }
@@ -135,5 +185,6 @@
         setInterval(updateThumbnails, updateInterval);
     };
 </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92a38bc4d9fa69e7',t:'MTc0MzYzMDY2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
