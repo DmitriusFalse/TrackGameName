@@ -1,7 +1,7 @@
-/* Общие стили для тёмной темы */
+/* Общие стили для темной темы */
 body.main-body {
-    background-color: #1e1e1e;
-    color: #d4d4d4;
+    background-color: #2a2a2e; /* Темно-серый фон */
+    color: #d3d3d3; /* Светло-серый текст */
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
@@ -10,9 +10,11 @@ body.main-body {
     align-items: center;
     min-height: 100vh;
 }
+
 body.main-body.info {
-    background-color: #00FF00;
+    background-color: #2e3b2e; /* Мягкий темно-зеленый */
 }
+
 body.main-body.page-game,
 body.main-body.page-all,
 body.main-body.page-system,
@@ -20,8 +22,23 @@ body.main-body.page-thumbnail {
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
-
+    background-color: #00ff00; /* Темный зеленый вместо яркого */
 }
+
+body.main-body.page-thumbnail .container {
+    background-color: rgba(0, 0, 0, 0); /* Прозрачный фон для thumbnails */
+}
+
+.container {
+    background-color: #353539; /* Темно-серый контейнер */
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    max-width: 600px;
+    width: 100%;
+    margin: 20px;
+}
+
 body.main-body.page-game .container,
 body.main-body.page-all .container,
 body.main-body.page-system .container,
@@ -30,54 +47,39 @@ body.main-body.page-thumbnail .container {
     width: auto;
     box-shadow: none;
 }
-.container {
-    background-color: #2a2a2a;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    max-width: 600px;
-    width: 100%;
-    margin: 20px;
-}
-body.main-body.page-thumbnail .container {
-    max-width: 100%;
-    width: auto;
-}
-/* Заголовки */
+
 h2.main-title, h2.settings-title {
-    color: #e0e0e0;
+    color: #a9b7c6; /* Светло-голубоватый для заголовков */
     font-size: 24px;
     margin-bottom: 20px;
     text-align: center;
 }
 
 h3.endpoints-title {
-    color: #b0b0b0;
+    color: #b0bec5;
     font-size: 18px;
     margin-top: 20px;
     margin-bottom: 10px;
 }
 
-/* Текст */
 .game-text, .system-text {
     font-size: 16px;
-    color: #cccccc;
+    color: #b3b3b3; /* Светло-серый для текста */
 }
 
 .value {
     font-weight: bold;
-    color: #61dafb;
+    color: #5da8e0; /* Голубой для значений */
 }
 
-/* Ссылки */
 a.settings-link, a.home-link, a.endpoint-link {
-    color: #61dafb;
+    color: #6ab0f3; /* Светло-голубой для ссылок */
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
-    color: #ff6b6b;
+    color: #ff6b6b; /* Красноватый при наведении */
 }
 
 .nav-section {
@@ -114,8 +116,10 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 
 .label {
     font-weight: bold;
-    color: #e0e0e0;
+    color: #a9b7c6;
     margin-bottom: 5px;
+    display: inline-block;
+    width: 200px; /* Для выравнивания меток */
 }
 
 .checkbox-label {
@@ -125,16 +129,16 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 
 .input-field {
     padding: 8px;
-    border: 1px solid #444444;
+    border: 1px solid #4a4a4e;
     border-radius: 4px;
     font-size: 14px;
-    background-color: #333333;
-    color: #d4d4d4;
+    background-color: #3c3c40; /* Темный фон для полей ввода */
+    color: #d3d3d3;
     transition: border-color 0.3s ease;
 }
 
 .input-field:focus {
-    border-color: #61dafb;
+    border-color: #6ab0f3;
     outline: none;
 }
 
@@ -144,7 +148,7 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 
 .description {
     font-size: 12px;
-    color: #999999;
+    color: #8a8a8e; /* Серый для описаний */
     margin-top: 5px;
 }
 
@@ -154,8 +158,8 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 }
 
 .submit-button {
-    background-color: #61dafb;
-    color: #1e1e1e;
+    background-color: #6ab0f3;
+    color: #ffffff;
     padding: 10px;
     border: none;
     border-radius: 4px;
@@ -163,11 +167,13 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
+
 a.submit-button {
     text-decoration: none;
 }
+
 .submit-button:hover {
-    background-color: #4fa8d5;
+    background-color: #5da8e0;
 }
 
 .system-icon {
@@ -185,49 +191,80 @@ a.submit-button {
     font-size: 16px;
 }
 
-.label {
-    display: inline-block;
-    width: 200px;
-}
-
+/* Стили для thumbnails */
 .thumbnail {
     display: block;
     margin: 0 auto;
+    transition: opacity 0.5s ease;
 }
 
-.no-thumbnail {
-    font-size: 16px;
-    color: #555555;
-}
 .thumbnail-container {
     max-width: 100%;
+    text-align: center;
 }
 
 .thumbnail-section {
     margin-top: 20px;
     text-align: center;
 }
-.index-container .thumbnail{
+
+.no-thumbnail {
+    font-size: 16px;
+    color: #b3b3b3;
+}
+
+.index-container .thumbnail {
     max-width: 100%;
 }
+
+/* Новые стили для settings.html */
+.settings-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #4a4a4e;
+    border-radius: 5px;
+    background-color: #3c3c40; /* Темный фон для секций */
+}
+
+.settings-section legend {
+    font-weight: bold;
+    color: #a9b7c6;
+    padding: 0 10px;
+    font-size: 18px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-top: 20px;
+}
+
+/* Стили для donate */
 .donate-section {
     margin-top: 20px;
     text-align: center;
 }
+
 .donate-text {
     font-size: 16px;
-    color: #737272;
+    color: #d3d3d3;
 }
+
 p.donate-text {
     margin: 0;
 }
+
 .donate-link {
-    color: #1e90ff;
+    color: #6ab0f3;
     text-decoration: none;
 }
+
 .donate-link:hover {
     text-decoration: underline;
+    color: #5da8e0;
 }
+
 .donate-heart {
     width: 16px;
     height: 16px;

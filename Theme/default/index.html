@@ -11,11 +11,11 @@
 		<p class="game-line"><span class="label">{{.T.current_game}}:</span> <span class="value game-text">{{.CurrentGame}}</span></p>
 		<p class="system-line"><span class="label">{{.T.current_system}}:</span> <span class="value system-text">{{.CurrentConsole}}</span></p>
 	</div>
-	{{if and .EnableThumbnails (ne .ThumbnailPath "")}}
-	<div class="thumbnail-section">
-		<img src="{{.ThumbnailPath}}" alt="{{.CurrentGame}}" class="thumbnail"
-			 {{if .ThumbnailWidth}}width="{{.ThumbnailWidth}}"{{end}}
-			 {{if .ThumbnailHeight}}height="{{.ThumbnailHeight}}"{{end}}>
+	{{if .EnableThumbnails}}
+	<div class="thumbnails">
+		{{range .ThumbnailPaths}}
+		<img src="{{.}}" class="thumbnail" style="width: {{$.ThumbnailWidth}}; height: {{$.ThumbnailHeight}};" alt="Thumbnail">
+		{{end}}
 	</div>
 	{{end}}
 	<div class="nav-section">

@@ -1,26 +1,47 @@
-
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-	<meta http-equiv="refresh" content="{{.RefreshInterval}}">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>All - TrackGameName</title>
 	<link rel="stylesheet" href="/theme/{{.Theme}}/styles.css">
 </head>
 <body class="main-body page-all info">
-	<div class="container">
-		{{if and (gt .SystemIcon 0) (ne .CurrentConsole "")}}
-			{{if .IconFile}}
-				<img src="/systems/{{.IconFile}}" alt="{{.CurrentConsole}}" class="system-icon">
-				{{if eq .SystemIcon 1}}
-					<span class="system-text">{{.CurrentConsole}}</span> -
-				{{else}}
-					-
-				{{end}}
-			{{else}}
-				<span class="system-text">{{.CurrentConsole}}</span> -
-			{{end}}
-		{{else}}
-			<span class="system-text">{{.CurrentConsole}}</span>:
-		{{end}}
-		<span class="game-text">{{.CurrentGame}}</span>
-	</div>
+<div class="container">
+	{{if .SystemIcon}}
+	{{if .IconFile}}
+	<img src="/systems/{{.IconFile}}" alt="{{.CurrentConsole}} icon">
+	{{end}}
+	{{end}}
+	<span class="system-text" id="system">{{.CurrentConsole}}</span>
+	<span class="system-text">:</span>
+	<span class="game-text" id="game">{{.CurrentGame}}</span>
+</div>
+<script>
+	const updateInterval = {{.UpdateInterval}} * 1000;
+	let lastGame = "{{.CurrentGame}}";
+	let lastSystem = "{{.CurrentConsole}}";
+
+	function updateAll() {
+		fetch('/all/data')
+				.then(response => response.json())
+				.then(data => {
+					if (data.current_game !== lastGame || data.current_console !== lastSystem) {
+						document.getElementById('game').textContent = data.current_game;
+						document.getElementById('system').textContent = data.current_console;
+						{{if .SystemIcon}}
+						if (data.icon_file) {
+							document.querySelector('img').src = '/systems/' + data.icon_file;
+						}
+						{{end}}
+						lastGame = data.current_game;
+						lastSystem = data.current_console;
+					}
+				})
+				.catch(error => console.error('Error fetching all data:', error));
+	}
+
+	setInterval(updateAll, updateInterval);
+</script>
 </body>
 </html>

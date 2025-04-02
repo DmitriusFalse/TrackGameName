@@ -10,9 +10,11 @@ body.main-body {
     align-items: center;
     min-height: 100vh;
 }
+
 body.main-body.info {
-    background-color: #00FF00;
+    background-color: #e6ffe6; /* Мягкий светло-зелёный вместо яркого #00FF00 */
 }
+
 body.main-body.page-game,
 body.main-body.page-all,
 body.main-body.page-system,
@@ -20,8 +22,13 @@ body.main-body.page-thumbnail {
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
-
+    background-color: #00ff00;
 }
+
+body.main-body.page-thumbnail .container {
+    background-color: rgba(0, 0, 0, 0); /* Прозрачный фон для thumbnails */
+}
+
 .container {
     background-color: #ffffff;
     border-radius: 8px;
@@ -31,6 +38,7 @@ body.main-body.page-thumbnail {
     width: 100%;
     margin: 20px;
 }
+
 body.main-body.page-game .container,
 body.main-body.page-all .container,
 body.main-body.page-system .container,
@@ -39,6 +47,7 @@ body.main-body.page-thumbnail .container {
     width: auto;
     box-shadow: none;
 }
+
 h2.main-title, h2.settings-title {
     color: #2c3e50;
     font-size: 24px;
@@ -109,6 +118,8 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
     font-weight: bold;
     color: #2c3e50;
     margin-bottom: 5px;
+    display: inline-block;
+    width: 200px; /* Для выравнивания меток */
 }
 
 .checkbox-label {
@@ -155,9 +166,11 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
+
 a.submit-button {
     text-decoration: none;
 }
+
 .submit-button:hover {
     background-color: #2980b9;
 }
@@ -177,48 +190,78 @@ a.submit-button {
     font-size: 16px;
 }
 
-.label {
-    display: inline-block;
-    width: 200px;
-}
-
+/* Стили для thumbnails */
 .thumbnail {
     display: block;
     margin: 0 auto;
+    transition: opacity 0.5s ease; /* Добавлено для совместимости с thumbnails.html */
 }
 
-.no-thumbnail {
-    font-size: 16px;
-    color: #555555;
-}
 .thumbnail-container {
     max-width: 100%;
+    text-align: center; /* Центрируем содержимое */
 }
 
 .thumbnail-section {
     margin-top: 20px;
     text-align: center;
 }
-.index-container .thumbnail{
+
+.no-thumbnail {
+    font-size: 16px;
+    color: #555555;
+}
+
+.index-container .thumbnail {
     max-width: 100%;
 }
+
+/* Новые стили для settings.html */
+.settings-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+    background-color: #fefefe; /* Лёгкий фон для выделения секций */
+}
+
+.settings-section legend {
+    font-weight: bold;
+    color: #2c3e50;
+    padding: 0 10px;
+    font-size: 18px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-top: 20px;
+}
+
+/* Стили для donate */
 .donate-section {
     margin-top: 20px;
     text-align: center;
 }
+
 .donate-text {
     font-size: 16px;
     color: #333333;
 }
+
 p.donate-text {
     margin: 0;
 }
+
 .donate-link {
-    color: #007bff;
+    color: #3498db;
     text-decoration: none;
 }
+
 .donate-link:hover {
     text-decoration: underline;
+    color: #2980b9;
 }
 
 .donate-heart {

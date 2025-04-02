@@ -29,20 +29,24 @@ var activeIcon []byte
 var inactiveIcon []byte
 
 type Config struct {
-	RetroarchPath    string            `ini:"retroarch_path"`
-	SavePath         string            `ini:"save_path"`
-	SaveToOneFile    bool              `ini:"save_to_one_file"`
-	Autorun          bool              `ini:"autorun"`
-	OutputToFiles    bool              `ini:"output_to_files"`
-	WebPort          int               `ini:"web_port"`
-	SystemIcon       int               `ini:"system_icon"`
-	RefreshInterval  int               `ini:"refresh_interval"`
-	Theme            string            `ini:"theme"`
-	Language         string            `ini:"language"`
-	ThumbnailsPath   string            `ini:"thumbnails_path"`
-	EnableThumbnails bool              `ini:"enable_thumbnails"`
-	ThumbnailSize    string            `ini:"thumbnail_size"`
-	Systems          map[string]string `ini:"systems"`
+	RetroarchPath           string            `ini:"retroarch_path"`
+	SavePath                string            `ini:"save_path"`
+	SaveToOneFile           bool              `ini:"save_to_one_file"`
+	Autorun                 bool              `ini:"autorun"`
+	OutputToFiles           bool              `ini:"output_to_files"`
+	WebPort                 int               `ini:"web_port"`
+	SystemIcon              int               `ini:"system_icon"`
+	UpdateInterval          int               `ini:"update_interval"`
+	Theme                   string            `ini:"theme"`
+	Language                string            `ini:"language"`
+	ThumbnailsPath          string            `ini:"thumbnails_path"`
+	EnableThumbnails        bool              `ini:"enable_thumbnails"`
+	ThumbnailSize           string            `ini:"thumbnail_size"`
+	AlternateThumbnails     bool              `ini:"alternate_thumbnails"`
+	ThumbnailSwitchInterval int               `ini:"thumbnail_switch_interval"`
+	FadeDuration            float64           `ini:"fade_duration"`
+	FadeType                string            `ini:"fade_type"`
+	Systems                 map[string]string `ini:"systems"`
 }
 
 type Translations map[string]string
@@ -57,7 +61,7 @@ var (
 	langPath            string
 	config              Config
 	templates           map[string]*template.Template
-	translations        Translations // Глобальная переменная для переводов
+	translations        Translations
 )
 
 func findFirstLine(filePath, search string) (string, error) {
@@ -100,10 +104,7 @@ func extractValue(line, pattern string) (string, string) {
 		return "", ""
 	}
 
-	// Полное название (всё между кавычек)
 	fullName := line[start:end]
-
-	// Короткое название (обрезаем до первого скобочного уточнения)
 	shortName := strings.Split(fullName, "(")[0]
 	shortName = strings.TrimSpace(shortName)
 
@@ -165,12 +166,16 @@ func updateConfig(newConfig Config) error {
 	cfg.Section("").Key("output_to_files").SetValue(strconv.FormatBool(newConfig.OutputToFiles))
 	cfg.Section("").Key("web_port").SetValue(strconv.Itoa(newConfig.WebPort))
 	cfg.Section("").Key("system_icon").SetValue(strconv.Itoa(newConfig.SystemIcon))
-	cfg.Section("").Key("refresh_interval").SetValue(strconv.Itoa(newConfig.RefreshInterval))
+	cfg.Section("").Key("update_interval").SetValue(strconv.Itoa(newConfig.UpdateInterval))
 	cfg.Section("").Key("theme").SetValue(newConfig.Theme)
 	cfg.Section("").Key("language").SetValue(newConfig.Language)
 	cfg.Section("").Key("thumbnails_path").SetValue(newConfig.ThumbnailsPath)
 	cfg.Section("").Key("enable_thumbnails").SetValue(strconv.FormatBool(newConfig.EnableThumbnails))
 	cfg.Section("").Key("thumbnail_size").SetValue(newConfig.ThumbnailSize)
+	cfg.Section("").Key("alternate_thumbnails").SetValue(strconv.FormatBool(newConfig.AlternateThumbnails))
+	cfg.Section("").Key("thumbnail_switch_interval").SetValue(strconv.Itoa(newConfig.ThumbnailSwitchInterval))
+	cfg.Section("").Key("fade_duration").SetValue(strconv.FormatFloat(newConfig.FadeDuration, 'f', 2, 64))
+	cfg.Section("").Key("fade_type").SetValue(newConfig.FadeType)
 	return cfg.SaveTo("config.ini")
 }
 
@@ -191,10 +196,29 @@ func loadTranslations(language string) (Translations, error) {
 func loadTemplates(theme string) error {
 	templates = make(map[string]*template.Template)
 	themeDir := filepath.Join(themePath, theme)
+	defaultDir := filepath.Join(themePath, "default")
 	files := []string{"index.html", "game.html", "system.html", "all.html", "settings.html", "thumbnails.html"}
+
 	for _, file := range files {
 		tmplPath := filepath.Join(themeDir, file)
-		tmpl, err := template.ParseFiles(tmplPath)
+		var tmpl *template.Template
+		var err error
+
+		// Проверяем, существует ли файл в выбранной теме
+		if _, err := os.Stat(tmplPath); os.IsNotExist(err) {
+			// Если файла нет, используем файл из темы default
+			tmplPath = filepath.Join(defaultDir, file)
+			if _, err := os.Stat(tmplPath); os.IsNotExist(err) {
+				return fmt.Errorf("template %s not found in theme %s or default theme", file, theme)
+			}
+			tmpl, err = template.ParseFiles(tmplPath)
+			log.Printf("Loaded template %s from default theme (not found in %s)", file, theme)
+		} else {
+			// Файл есть в выбранной теме, загружаем его
+			tmpl, err = template.ParseFiles(tmplPath)
+			log.Printf("Loaded template %s from theme %s", file, theme)
+		}
+
 		if err != nil {
 			return fmt.Errorf("error loading template %s: %v", file, err)
 		}
@@ -255,23 +279,27 @@ func getAvailableLanguages() []string {
 	return languages
 }
 
-// Новая функция для рендеринга шаблонов
 func renderTemplate(w http.ResponseWriter, tmplName string, data interface{}) {
+	if _, ok := templates[tmplName]; !ok {
+		log.Printf("Template %s not found", tmplName)
+		http.Error(w, "Server error: template not found", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := templates[tmplName].Execute(w, data); err != nil {
+	err := templates[tmplName].Execute(w, data)
+	if err != nil {
 		log.Printf("Error rendering %s: %v", tmplName, err)
-		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
 	}
 }
 
-// Новая функция для работы с configMutex
 func withConfigLock(fn func()) {
 	configMutex.RLock()
 	defer configMutex.RUnlock()
 	fn()
 }
 
-// Новая функция для записи данных в файлы
 func writeOutputFiles(savePath, gameName, consoleName string, saveToOneFile bool) {
 	if saveToOneFile {
 		output := consoleName + ": " + gameName
@@ -294,7 +322,6 @@ func writeOutputFiles(savePath, gameName, consoleName string, saveToOneFile bool
 	}
 }
 
-// Новая функция для очистки файлов
 func clearOutputFiles(savePath string, saveToOneFile bool) {
 	if saveToOneFile {
 		if err := os.WriteFile(filepath.Join(savePath, "output.txt"), []byte(""), 0644); err != nil {
@@ -316,18 +343,39 @@ func clearOutputFiles(savePath string, saveToOneFile bool) {
 	}
 }
 
-// Функция для получения пути к миниатюре
-func getThumbnailPath(config Config, currentConsole, currentGame, theme string) (string, string, string) {
-	var thumbnailPath, thumbnailWidth, thumbnailHeight string
+func getThumbnailPaths(config Config, currentConsole, currentGame, theme string) ([]string, string, string) {
+	var thumbnailPaths []string
+	var thumbnailWidth, thumbnailHeight string
 	if config.EnableThumbnails && config.ThumbnailsPath != "" && currentConsole != "" && currentGame != "" {
 		currentGame = strings.TrimSpace(currentGame)
 		currentConsole = strings.TrimSpace(currentConsole)
-		fullPath := filepath.Join(config.ThumbnailsPath, currentConsole, "Named_Titles", currentGame+".png")
-		if _, err := os.Stat(fullPath); !os.IsNotExist(err) {
-			thumbnailPath = fmt.Sprintf("/thumbnails/%s/Named_Titles/%s.png", currentConsole, currentGame)
-		} else {
-			thumbnailPath = fmt.Sprintf("/theme/%s/noimage.png", theme)
+
+		titlesPath := filepath.Join(config.ThumbnailsPath, currentConsole, "Named_Titles", currentGame+".png")
+		if _, err := os.Stat(titlesPath); !os.IsNotExist(err) {
+			thumbnailPaths = append(thumbnailPaths, fmt.Sprintf("/thumbnails/%s/Named_Titles/%s.png", currentConsole, currentGame))
 		}
+
+		boxartsPath := filepath.Join(config.ThumbnailsPath, currentConsole, "Named_Boxarts", currentGame+".png")
+		if _, err := os.Stat(boxartsPath); !os.IsNotExist(err) {
+			thumbnailPaths = append(thumbnailPaths, fmt.Sprintf("/thumbnails/%s/Named_Boxarts/%s.png", currentConsole, currentGame))
+		}
+
+		if len(thumbnailPaths) == 0 {
+			// Проверяем наличие noimage.png в текущей теме
+			noImagePath := filepath.Join(themePath, theme, "noimage.png")
+			if _, err := os.Stat(noImagePath); !os.IsNotExist(err) {
+				thumbnailPaths = append(thumbnailPaths, fmt.Sprintf("/theme/%s/noimage.png", theme))
+			} else {
+				// Если в текущей теме нет, используем из default
+				defaultNoImagePath := filepath.Join(themePath, "default", "noimage.png")
+				if _, err := os.Stat(defaultNoImagePath); !os.IsNotExist(err) {
+					thumbnailPaths = append(thumbnailPaths, "/theme/default/noimage.png")
+				} else {
+					log.Printf("Warning: noimage.png not found in theme %s or default", theme)
+				}
+			}
+		}
+
 		if config.ThumbnailSize != "" && config.ThumbnailSize != "0" {
 			parts := strings.Split(config.ThumbnailSize, "x")
 			if len(parts) == 2 {
@@ -342,7 +390,7 @@ func getThumbnailPath(config Config, currentConsole, currentGame, theme string) 
 			}
 		}
 	}
-	return thumbnailPath, thumbnailWidth, thumbnailHeight
+	return thumbnailPaths, thumbnailWidth, thumbnailHeight
 }
 
 func startWebServer(port int) {
@@ -350,52 +398,55 @@ func startWebServer(port int) {
 
 	http.Handle("/systems/", http.StripPrefix("/systems/", http.FileServer(http.Dir(systemsPath))))
 	http.Handle("/theme/", http.StripPrefix("/theme/", http.FileServer(http.Dir(themePath))))
-
-	http.HandleFunc("/thumbnails/", func(w http.ResponseWriter, r *http.Request) {
-		withConfigLock(func() {
-			if !config.EnableThumbnails || config.ThumbnailsPath == "" {
-				http.Error(w, "Thumbnails are disabled or path not set", http.StatusNotFound)
-				return
-			}
-			http.StripPrefix("/thumbnails/", http.FileServer(http.Dir(config.ThumbnailsPath))).ServeHTTP(w, r)
-		})
-	})
+	http.Handle("/thumbnails/", http.StripPrefix("/thumbnails/", http.FileServer(http.Dir(config.ThumbnailsPath))))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		withConfigLock(func() {
-			translations, err := loadTranslations(config.Language)
-			if err != nil {
-				log.Printf("Error loading translations: %v", err)
-				http.Error(w, "Server error", http.StatusInternalServerError)
-				return
-			}
-			data := struct {
-				RefreshInterval  int
-				Running          bool
-				CurrentGame      string
-				CurrentConsole   string
-				Theme            string
-				T                Translations
-				EnableThumbnails bool
-				ThumbnailPath    string
-				ThumbnailWidth   string
-				ThumbnailHeight  string
-			}{
-				RefreshInterval:  config.RefreshInterval,
-				Running:          isRetroarchRunning(),
-				CurrentGame:      currentGame,
-				CurrentConsole:   currentConsole,
-				Theme:            config.Theme,
-				T:                translations,
-				EnableThumbnails: config.EnableThumbnails,
-				ThumbnailPath:    "",
-				ThumbnailWidth:   "",
-				ThumbnailHeight:  "",
-			}
-			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGame, config.Theme)
-			fmt.Println(data.ThumbnailPath)
-			renderTemplate(w, "index.html", data)
-			footer := `
+		configMutex.RLock()
+		defer configMutex.RUnlock()
+
+		translations, err := loadTranslations(config.Language)
+		if err != nil {
+			log.Printf("Error loading translations: %v", err)
+			http.Error(w, "Server error: failed to load translations", http.StatusInternalServerError)
+			return
+		}
+
+		data := struct {
+			Running                 bool
+			CurrentGame             string
+			CurrentConsole          string
+			Theme                   string
+			T                       Translations
+			EnableThumbnails        bool
+			ThumbnailPaths          []string
+			ThumbnailWidth          string
+			ThumbnailHeight         string
+			AlternateThumbnails     bool
+			ThumbnailSwitchInterval int
+			UpdateInterval          int
+		}{
+			Running:                 isRetroarchRunning(),
+			CurrentGame:             currentGame,
+			CurrentConsole:          currentConsole,
+			Theme:                   config.Theme,
+			T:                       translations,
+			EnableThumbnails:        config.EnableThumbnails,
+			ThumbnailPaths:          []string{},
+			ThumbnailWidth:          "",
+			ThumbnailHeight:         "",
+			AlternateThumbnails:     config.AlternateThumbnails,
+			ThumbnailSwitchInterval: config.ThumbnailSwitchInterval,
+			UpdateInterval:          config.UpdateInterval,
+		}
+
+		thumbnailPaths, thumbnailWidth, thumbnailHeight := getThumbnailPaths(config, currentConsole, currentGame, config.Theme)
+		data.ThumbnailPaths = thumbnailPaths
+		data.ThumbnailWidth = thumbnailWidth
+		data.ThumbnailHeight = thumbnailHeight
+
+		renderTemplate(w, "index.html", data)
+
+		footer := `
         <script>
             var container = document.querySelector(".container.index-container");
             if (container) {
@@ -419,99 +470,197 @@ func startWebServer(port int) {
             setInterval(protectFooter, 1000);
         </script>
     `
-			w.Write([]byte(footer))
-		})
+		_, err = w.Write([]byte(footer))
+		if err != nil {
+			log.Printf("Error writing footer: %v", err)
+		}
 	})
 
+	// Обработчик /game
 	http.HandleFunc("/game", func(w http.ResponseWriter, r *http.Request) {
-		withConfigLock(func() {
-			data := struct {
-				RefreshInterval int
-				CurrentGame     string
-				Theme           string
-			}{
-				RefreshInterval: config.RefreshInterval,
-				CurrentGame:     currentGame,
-				Theme:           config.Theme,
-			}
-			renderTemplate(w, "game.html", data)
-		})
+		configMutex.RLock()
+		defer configMutex.RUnlock()
+
+		data := struct {
+			CurrentGame    string
+			Theme          string
+			UpdateInterval int
+		}{
+			CurrentGame:    currentGame,
+			Theme:          config.Theme,
+			UpdateInterval: config.UpdateInterval,
+		}
+		renderTemplate(w, "game.html", data)
 	})
 
+	// Новый маршрут для получения данных /game/data
+	http.HandleFunc("/game/data", func(w http.ResponseWriter, r *http.Request) {
+		configMutex.RLock()
+		defer configMutex.RUnlock()
+
+		data := struct {
+			CurrentGame string `json:"current_game"`
+		}{
+			CurrentGame: currentGame,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	})
+
+	// Обработчик /system
 	http.HandleFunc("/system", func(w http.ResponseWriter, r *http.Request) {
-		withConfigLock(func() {
-			data := struct {
-				RefreshInterval int
-				SystemIcon      int
-				CurrentConsole  string
-				IconFile        string
-				Theme           string
-			}{
-				RefreshInterval: config.RefreshInterval,
-				SystemIcon:      config.SystemIcon,
-				CurrentConsole:  currentConsole,
-				Theme:           config.Theme,
+		configMutex.RLock()
+		defer configMutex.RUnlock()
+
+		data := struct {
+			SystemIcon     int
+			CurrentConsole string
+			IconFile       string
+			Theme          string
+			UpdateInterval int
+		}{
+			SystemIcon:     config.SystemIcon,
+			CurrentConsole: currentConsole,
+			Theme:          config.Theme,
+			UpdateInterval: config.UpdateInterval,
+		}
+		if config.SystemIcon > 0 && currentConsole != "" {
+			if iconFile, exists := config.Systems[currentConsole]; exists {
+				data.IconFile = iconFile
 			}
-			if config.SystemIcon > 0 && currentConsole != "" {
-				if iconFile, exists := config.Systems[currentConsole]; exists {
-					data.IconFile = iconFile
-				}
-			}
-			renderTemplate(w, "system.html", data)
-		})
+		}
+		renderTemplate(w, "system.html", data)
 	})
 
+	// Новый маршрут для получения данных /system/data
+	http.HandleFunc("/system/data", func(w http.ResponseWriter, r *http.Request) {
+		configMutex.RLock()
+		defer configMutex.RUnlock()
+
+		data := struct {
+			CurrentConsole string `json:"current_console"`
+			IconFile       string `json:"icon_file"`
+		}{
+			CurrentConsole: currentConsole,
+		}
+		if config.SystemIcon > 0 && currentConsole != "" {
+			if iconFile, exists := config.Systems[currentConsole]; exists {
+				data.IconFile = iconFile
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	})
+
+	// Обработчик /all
 	http.HandleFunc("/all", func(w http.ResponseWriter, r *http.Request) {
-		withConfigLock(func() {
-			data := struct {
-				RefreshInterval int
-				SystemIcon      int
-				CurrentConsole  string
-				CurrentGame     string
-				IconFile        string
-				Theme           string
-			}{
-				RefreshInterval: config.RefreshInterval,
-				SystemIcon:      config.SystemIcon,
-				CurrentConsole:  currentConsole,
-				CurrentGame:     currentGame,
-				Theme:           config.Theme,
+		configMutex.RLock()
+		defer configMutex.RUnlock()
+
+		data := struct {
+			SystemIcon     int
+			CurrentConsole string
+			CurrentGame    string
+			IconFile       string
+			Theme          string
+			UpdateInterval int
+		}{
+			SystemIcon:     config.SystemIcon,
+			CurrentConsole: currentConsole,
+			CurrentGame:    currentGame,
+			Theme:          config.Theme,
+			UpdateInterval: config.UpdateInterval,
+		}
+		if config.SystemIcon > 0 && currentConsole != "" {
+			if iconFile, exists := config.Systems[currentConsole]; exists {
+				data.IconFile = iconFile
 			}
-			if config.SystemIcon > 0 && currentConsole != "" {
-				if iconFile, exists := config.Systems[currentConsole]; exists {
-					data.IconFile = iconFile
-				}
-			}
-			renderTemplate(w, "all.html", data)
-		})
+		}
+		renderTemplate(w, "all.html", data)
 	})
 
+	// Новый маршрут для получения данных /all/data
+	http.HandleFunc("/all/data", func(w http.ResponseWriter, r *http.Request) {
+		configMutex.RLock()
+		defer configMutex.RUnlock()
+
+		data := struct {
+			CurrentGame    string `json:"current_game"`
+			CurrentConsole string `json:"current_console"`
+			IconFile       string `json:"icon_file"`
+		}{
+			CurrentGame:    currentGame,
+			CurrentConsole: currentConsole,
+		}
+		if config.SystemIcon > 0 && currentConsole != "" {
+			if iconFile, exists := config.Systems[currentConsole]; exists {
+				data.IconFile = iconFile
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	})
+
+	// Обработчик /thumbnails
 	http.HandleFunc("/thumbnails", func(w http.ResponseWriter, r *http.Request) {
-		withConfigLock(func() {
-			data := struct {
-				RefreshInterval  int
-				CurrentGame      string
-				CurrentConsole   string
-				Theme            string
-				EnableThumbnails bool
-				ThumbnailPath    string
-				ThumbnailWidth   string
-				ThumbnailHeight  string
-			}{
-				RefreshInterval:  config.RefreshInterval,
-				CurrentGame:      currentGame,
-				CurrentConsole:   currentConsole,
-				Theme:            config.Theme,
-				EnableThumbnails: config.EnableThumbnails,
-				ThumbnailPath:    "",
-				ThumbnailWidth:   "",
-				ThumbnailHeight:  "",
-			}
-			data.ThumbnailPath, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPath(config, currentConsole, currentGame, config.Theme)
-			renderTemplate(w, "thumbnails.html", data)
-		})
+		configMutex.RLock()
+		defer configMutex.RUnlock()
+
+		data := struct {
+			CurrentGame             string
+			CurrentConsole          string
+			Theme                   string
+			EnableThumbnails        bool
+			ThumbnailPaths          []string
+			ThumbnailWidth          string
+			ThumbnailHeight         string
+			AlternateThumbnails     bool
+			ThumbnailSwitchInterval int
+			UpdateInterval          int
+			FadeDuration            float64
+			FadeType                string
+		}{
+			CurrentGame:             currentGame,
+			CurrentConsole:          currentConsole,
+			Theme:                   config.Theme,
+			EnableThumbnails:        config.EnableThumbnails,
+			ThumbnailPaths:          []string{},
+			ThumbnailWidth:          "",
+			ThumbnailHeight:         "",
+			AlternateThumbnails:     config.AlternateThumbnails,
+			ThumbnailSwitchInterval: config.ThumbnailSwitchInterval,
+			UpdateInterval:          config.UpdateInterval,
+			FadeDuration:            config.FadeDuration,
+			FadeType:                config.FadeType,
+		}
+		data.ThumbnailPaths, data.ThumbnailWidth, data.ThumbnailHeight = getThumbnailPaths(config, currentConsole, currentGame, config.Theme)
+		renderTemplate(w, "thumbnails.html", data)
 	})
 
+	// Новый маршрут для получения данных /thumbnails/data
+	http.HandleFunc("/thumbnails/data", func(w http.ResponseWriter, r *http.Request) {
+		configMutex.RLock()
+		defer configMutex.RUnlock()
+
+		thumbnailPaths, thumbnailWidth, thumbnailHeight := getThumbnailPaths(config, currentConsole, currentGame, config.Theme)
+		data := struct {
+			CurrentGame     string   `json:"current_game"`
+			CurrentConsole  string   `json:"current_console"`
+			ThumbnailPaths  []string `json:"thumbnail_paths"`
+			ThumbnailWidth  string   `json:"thumbnail_width"`
+			ThumbnailHeight string   `json:"thumbnail_height"`
+		}{
+			CurrentGame:     currentGame,
+			CurrentConsole:  currentConsole,
+			ThumbnailPaths:  thumbnailPaths,
+			ThumbnailWidth:  thumbnailWidth,
+			ThumbnailHeight: thumbnailHeight,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	})
+
+	// Обработчик /settings
 	http.HandleFunc("/settings", func(w http.ResponseWriter, r *http.Request) {
 		configMutex.RLock()
 		currentConfig := config
@@ -521,7 +670,7 @@ func startWebServer(port int) {
 			translations, err := loadTranslations(currentConfig.Language)
 			if err != nil {
 				log.Printf("Error loading translations: %v", err)
-				http.Error(w, "Server error", http.StatusInternalServerError)
+				http.Error(w, "Server error: failed to load translations", http.StatusInternalServerError)
 				return
 			}
 			data := struct {
@@ -550,15 +699,17 @@ func startWebServer(port int) {
 			config.SaveToOneFile = r.FormValue("save_to_one_file") == "on"
 			config.Autorun = r.FormValue("autorun") == "on"
 			config.OutputToFiles = r.FormValue("output_to_files") == "on"
+
 			if port, err := strconv.Atoi(r.FormValue("web_port")); err == nil && port > 0 && port <= 65535 {
 				config.WebPort = port
 			}
 			if icon, err := strconv.Atoi(r.FormValue("system_icon")); err == nil && icon >= 0 && icon <= 2 {
 				config.SystemIcon = icon
 			}
-			if interval, err := strconv.Atoi(r.FormValue("refresh_interval")); err == nil && interval >= 1 {
-				config.RefreshInterval = interval
+			if interval, err := strconv.Atoi(r.FormValue("update_interval")); err == nil && interval >= 1 {
+				config.UpdateInterval = interval
 			}
+
 			newTheme := r.FormValue("theme")
 			if _, err := os.Stat(filepath.Join(themePath, newTheme)); !os.IsNotExist(err) {
 				config.Theme = newTheme
@@ -566,6 +717,7 @@ func startWebServer(port int) {
 					log.Printf("Error loading theme %s: %v", config.Theme, err)
 				}
 			}
+
 			newLanguage := r.FormValue("language")
 			if _, err := os.Stat(filepath.Join(langPath, newLanguage+".json")); !os.IsNotExist(err) {
 				config.Language = newLanguage
@@ -574,20 +726,50 @@ func startWebServer(port int) {
 					log.Printf("Error reloading translations: %v", err)
 				}
 			}
+
 			config.ThumbnailsPath = r.FormValue("thumbnails_path")
 			config.EnableThumbnails = r.FormValue("enable_thumbnails") == "on"
 			config.ThumbnailSize = r.FormValue("thumbnail_size")
+			config.AlternateThumbnails = r.FormValue("alternate_thumbnails") == "on"
+			if switchInterval, err := strconv.Atoi(r.FormValue("thumbnail_switch_interval")); err == nil && switchInterval >= 1 {
+				config.ThumbnailSwitchInterval = switchInterval
+			}
+
+			// Проверка и обработка FadeDuration с заменой запятой на точку
+			fadeDurationStr := strings.Replace(r.FormValue("fade_duration"), ",", ".", -1)
+			if duration, err := strconv.ParseFloat(fadeDurationStr, 64); err == nil && duration >= 0.1 {
+				config.FadeDuration = duration
+			} else {
+				log.Printf("Invalid fade_duration value: %s, keeping previous value: %f", fadeDurationStr, config.FadeDuration)
+			}
+
+			// Проверка FadeType
+			fadeType := r.FormValue("fade_type")
+			validFadeTypes := []string{"ease", "ease-in", "ease-out", "ease-in-out", "linear"}
+			found := false
+			for _, ft := range validFadeTypes {
+				if fadeType == ft {
+					config.FadeType = fadeType
+					found = true
+					break
+				}
+			}
+			if !found {
+				log.Printf("Invalid fade_type value: %s, keeping previous value: %s", fadeType, config.FadeType)
+			}
 
 			if err := updateConfig(config); err != nil {
 				http.Error(w, "Error saving settings", http.StatusInternalServerError)
 				log.Printf("Error saving config.ini: %v", err)
 				return
 			}
+
 			if config.Autorun != (r.FormValue("autorun") != "on") {
 				if err := setAutorun(config.Autorun, "TrackGameName"); err != nil {
 					log.Printf("Error updating autorun: %v", err)
 				}
 			}
+
 			log.Println(translations["settings_updated"])
 			http.Redirect(w, r, "/settings", http.StatusSeeOther)
 		}
@@ -610,7 +792,6 @@ func main() {
 	log.SetOutput(logFile)
 	log.SetFlags(log.LstdFlags)
 
-	// Загружаем конфигурацию
 	cfg, err := ini.Load("config.ini")
 	if err != nil {
 		log.Printf("Error loading config.ini: %v", err)
@@ -622,12 +803,16 @@ func main() {
 		cfg.Section("").Key("output_to_files").SetValue("true")
 		cfg.Section("").Key("web_port").SetValue("3489")
 		cfg.Section("").Key("system_icon").SetValue("0")
-		cfg.Section("").Key("refresh_interval").SetValue("20")
+		cfg.Section("").Key("update_interval").SetValue("5")
 		cfg.Section("").Key("theme").SetValue("default")
 		cfg.Section("").Key("language").SetValue("en")
 		cfg.Section("").Key("thumbnails_path").SetValue("")
 		cfg.Section("").Key("enable_thumbnails").SetValue("false")
 		cfg.Section("").Key("thumbnail_size").SetValue("0")
+		cfg.Section("").Key("alternate_thumbnails").SetValue("false")
+		cfg.Section("").Key("thumbnail_switch_interval").SetValue("5")
+		cfg.Section("").Key("fade_duration").SetValue("0.5")
+		cfg.Section("").Key("fade_type").SetValue("ease-out")
 		cfg.Section("systems").Key("Nintendo").SetValue("nes.png")
 		err = cfg.SaveTo("config.ini")
 		if err != nil {
@@ -677,14 +862,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	langPath = filepath.Join("lang")
-	if err := os.MkdirAll(langPath, 0755); err != nil {
-		log.Printf("Error creating lang folder: %v", err)
-		os.Exit(1)
+	// Проверяем, существует ли указанная тема, и загружаем шаблоны
+	if _, err := os.Stat(filepath.Join(themePath, config.Theme)); os.IsNotExist(err) {
+		log.Printf("Theme %s not found, falling back to default", config.Theme)
+		config.Theme = "default"
 	}
-
 	if err := loadTemplates(config.Theme); err != nil {
-		log.Printf("Error loading theme %s: %v", config.Theme, err)
+		log.Printf("Error loading theme %s: %v, falling back to default", config.Theme, err)
 		config.Theme = "default"
 		if err := loadTemplates(config.Theme); err != nil {
 			log.Printf("Error loading default theme: %v", err)
@@ -692,11 +876,16 @@ func main() {
 		}
 	}
 
-	// Загружаем переводы
+	langPath = filepath.Join("lang")
+	if err := os.MkdirAll(langPath, 0755); err != nil {
+		log.Printf("Error creating lang folder: %v", err)
+		os.Exit(1)
+	}
+
 	translations, err = loadTranslations(config.Language)
 	if err != nil {
 		log.Printf("Error loading translations: %v", err)
-		config.Language = "en" // По умолчанию английский
+		config.Language = "en"
 		translations, err = loadTranslations(config.Language)
 		if err != nil {
 			log.Printf("Error loading default translations: %v", err)

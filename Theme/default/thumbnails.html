@@ -1,17 +1,139 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta http-equiv="refresh" content="{{.RefreshInterval}}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thumbnails - TrackGameName</title>
     <link rel="stylesheet" href="/theme/{{.Theme}}/styles.css">
 </head>
 <body class="main-body page-thumbnail info">
 <div class="container thumbnail-container">
-    {{if and .EnableThumbnails (ne .ThumbnailPath "")}}
-    <img src="{{.ThumbnailPath}}" alt="{{.CurrentGame}}" class="thumbnail"
-         {{if .ThumbnailWidth}}width="{{.ThumbnailWidth}}"{{end}}
-         {{if .ThumbnailHeight}}height="{{.ThumbnailHeight}}"{{end}}>
-    {{else}}
-    <span class="no-thumbnail">No thumbnail available</span>
+    {{range $index, $path := .ThumbnailPaths}}
+    <img src="{{$path}}" class="thumbnail" style="width: {{$.ThumbnailWidth}}; height: {{$.ThumbnailHeight}}; {{if ne $index 0}}opacity: 0;{{end}}" alt="Thumbnail">
     {{end}}
 </div>
+
+<script>
+    const updateInterval = {{.UpdateInterval}} * 1000;
+    const fadeDuration = {{.FadeDuration}} * 1000; // Переводим в миллисекунды
+    const fadeType = "{{.FadeType}}";
+    let lastGame = "{{.CurrentGame}}";
+    let lastConsole = "{{.CurrentConsole}}";
+    let lastThumbnails = [];
+    let currentThumbnailIndex = 0;
+    let thumbnailInterval = null;
+
+    function arraysEqual(a, b) {
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) return false;
+        }
+        return true;
+    }
+
+    document.head.insertAdjacentHTML("beforeend", `
+    <style>
+        .container.thumbnail-container {
+            position: relative;
+            display: grid;
+            justify-items: center;
+        }
+        .thumbnail {
+            position: absolute;
+            transition: opacity ${fadeDuration / 1000}s ${fadeType};
+        }
+        .thumbnail.hidden {
+            opacity: 0;
+        }
+        .thumbnail.visible {
+            opacity: 1;
+        }
+    </style>
+    `);
+
+    function setContainerSize(container, img) {
+        // Устанавливаем размер контейнера на основе натурального размера изображения
+        img.onload = () => {
+            container.style.width = img.naturalWidth + 'px';
+            container.style.height = img.naturalHeight + 'px';
+        };
+        // Если изображение уже загружено (например, из кэша), сразу задаём размер
+        if (img.complete) {
+            container.style.width = img.naturalWidth + 'px';
+            container.style.height = img.naturalHeight + 'px';
+        }
+    }
+
+    function updateThumbnails() {
+        const container = document.querySelector('.thumbnail-container');
+        if (!container) {
+            console.error('Thumbnail container not found');
+            return;
+        }
+
+        fetch('/thumbnails/data')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Fetched data:', data);
+
+                const gameChanged = data.current_game !== lastGame || data.current_console !== lastConsole;
+                const thumbnailsChanged = !arraysEqual(data.thumbnail_paths || [], lastThumbnails);
+
+                if (gameChanged || thumbnailsChanged) {
+                    if (thumbnailInterval) {
+                        clearInterval(thumbnailInterval);
+                        thumbnailInterval = null;
+                    }
+
+                    lastGame = data.current_game;
+                    lastConsole = data.current_console;
+                    lastThumbnails = data.thumbnail_paths || [];
+                    currentThumbnailIndex = 0;
+
+                    container.innerHTML = '';
+                    if (!lastThumbnails.length) {
+                        console.warn('No thumbnails found, displaying placeholder.');
+                        const img = document.createElement('img');
+                        img.src = '/theme/default/noimage.png?cache=' + Date.now();
+                        img.className = 'thumbnail visible';
+                        img.alt = 'No Thumbnail';
+                        img.style.width = data.thumbnail_width; // Устанавливаем через style
+                        img.style.height = data.thumbnail_height; // Устанавливаем через style
+                        container.appendChild(img);
+                        setContainerSize(container, img);
+                    } else {
+                        lastThumbnails.forEach((path, index) => {
+                            const img = document.createElement('img');
+                            img.src = path + '?cache=' + Date.now();
+                            img.className = 'thumbnail ' + (index === 0 ? 'visible' : 'hidden');
+                            img.alt = 'Thumbnail';
+                            img.style.width = data.thumbnail_width; // Устанавливаем через style
+                            img.style.height = data.thumbnail_height; // Устанавливаем через style
+                            container.appendChild(img);
+                            if (index === 0) {
+                                setContainerSize(container, img);
+                            }
+                        });
+
+                        if (lastThumbnails.length > 1 && {{.AlternateThumbnails}}) {
+                            const thumbnails = container.querySelectorAll('.thumbnail');
+                            thumbnailInterval = setInterval(() => {
+                                thumbnails[currentThumbnailIndex].className = 'thumbnail hidden';
+                                currentThumbnailIndex = (currentThumbnailIndex + 1) % thumbnails.length;
+                                thumbnails[currentThumbnailIndex].className = 'thumbnail visible';
+                                setContainerSize(container, thumbnails[currentThumbnailIndex]);
+                            }, {{.ThumbnailSwitchInterval}} * 1000);
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching thumbnails data:', error));
+    }
+
+    window.onload = () => {
+        updateThumbnails();
+        setInterval(updateThumbnails, updateInterval);
+    };
+</script>
 </body>
 </html>

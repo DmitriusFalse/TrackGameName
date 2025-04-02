@@ -1,7 +1,7 @@
-/* Общие стили для тёмной темы */
+/* Общие стили для тёмной темы Black */
 body.main-body {
-    background-color: #1e1e1e; /* Чёрный фон */
-    color: #d4d4d4; /* Светло-серый текст */
+    background-color: #1a1a1a;
+    color: #d9d9d9;
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
@@ -12,7 +12,7 @@ body.main-body {
 }
 
 body.main-body.info {
-    background-color: #00FF00;
+    background-color: #00ff00; /* Хромакей для OBS */
 }
 
 body.main-body.page-game,
@@ -24,6 +24,20 @@ body.main-body.page-thumbnail {
     align-items: flex-start;
 }
 
+body.main-body.page-thumbnail .container {
+    background-color: rgba(0, 0, 0, 0); /* Прозрачный фон для thumbnails */
+}
+
+.container {
+    background-color: #2c2c2c;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    max-width: 600px;
+    width: 100%;
+    margin: 20px;
+}
+
 body.main-body.page-game .container,
 body.main-body.page-all .container,
 body.main-body.page-system .container,
@@ -33,57 +47,38 @@ body.main-body.page-thumbnail .container {
     box-shadow: none;
 }
 
-.container {
-    background-color: #000000; /* Тёмно-серый контейнер */
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Усиленная тень */
-    padding: 20px;
-    max-width: 600px;
-    width: 100%;
-    margin: 20px;
-}
-
-body.main-body.page-thumbnail .container {
-    max-width: 100%;
-    width: auto;
-}
-
-/* Заголовки */
 h2.main-title, h2.settings-title {
-    color: #e0e0e0; /* Светло-серый заголовок */
+    color: #ffffff;
     font-size: 24px;
     margin-bottom: 20px;
     text-align: center;
 }
 
 h3.endpoints-title {
-    color: #b0b0b0; /* Серый для подзаголовков */
+    color: #e6e6e6;
     font-size: 18px;
     margin-top: 20px;
     margin-bottom: 10px;
 }
 
-/* Текст */
 .game-text, .system-text {
     font-size: 16px;
-    color: #ffffff;
-    font-weight: bold;
+    color: #b3b3b3;
 }
 
 .value {
     font-weight: bold;
-    color: #ff5555; /* Красный для значений */
+    color: #00b7eb;
 }
 
-/* Ссылки */
 a.settings-link, a.home-link, a.endpoint-link {
-    color: #ff5555; /* Красный для ссылок */
+    color: #00b7eb;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
-    color: #ff7777; /* Светлее красный при наведении */
+    color: #ff4d4d; /* Красный для ховера в тёмной теме */
 }
 
 .nav-section {
@@ -120,8 +115,10 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 
 .label {
     font-weight: bold;
-    color: #e0e0e0; /* Светло-серый для меток */
+    color: #e6e6e6;
     margin-bottom: 5px;
+    display: inline-block;
+    width: 200px; /* Для выравнивания меток */
 }
 
 .checkbox-label {
@@ -131,16 +128,16 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 
 .input-field {
     padding: 8px;
-    border: 1px solid #444444; /* Тёмно-серая рамка */
+    border: 1px solid #404040;
     border-radius: 4px;
     font-size: 14px;
-    background-color: #333333; /* Тёмный фон ввода */
-    color: #d4d4d4; /* Светлый текст */
+    background-color: #333333;
+    color: #d9d9d9;
     transition: border-color 0.3s ease;
 }
 
 .input-field:focus {
-    border-color: #ff5555; /* Красный при фокусе */
+    border-color: #00b7eb;
     outline: none;
 }
 
@@ -150,7 +147,7 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 
 .description {
     font-size: 12px;
-    color: #888888; /* Тёмно-серый для описаний */
+    color: #a6a6a6;
     margin-top: 5px;
 }
 
@@ -160,8 +157,8 @@ a.settings-link:hover, a.home-link:hover, a.endpoint-link:hover {
 }
 
 .submit-button {
-    background-color: #ff5555; /* Красный фон кнопки */
-    color: #1e1e1e; /* Чёрный текст */
+    background-color: #00b7eb;
+    color: #ffffff;
     padding: 10px;
     border: none;
     border-radius: 4px;
@@ -175,7 +172,7 @@ a.submit-button {
 }
 
 .submit-button:hover {
-    background-color: #ff7777; /* Светлее красный при наведении */
+    background-color: #0099cc;
 }
 
 .system-icon {
@@ -193,23 +190,16 @@ a.submit-button {
     font-size: 16px;
 }
 
-.label {
-    display: inline-block;
-    width: 200px;
-}
-
+/* Стили для thumbnails */
 .thumbnail {
     display: block;
     margin: 0 auto;
-}
-
-.no-thumbnail {
-    font-size: 16px;
-    color: #555555; /* Тёмно-серый для "нет миниатюры" */
+    transition: opacity 0.5s ease; /* Запасное значение для совместимости */
 }
 
 .thumbnail-container {
     max-width: 100%;
+    text-align: center;
 }
 
 .thumbnail-section {
@@ -217,10 +207,40 @@ a.submit-button {
     text-align: center;
 }
 
+.no-thumbnail {
+    font-size: 16px;
+    color: #b3b3b3;
+}
+
 .index-container .thumbnail {
     max-width: 100%;
 }
 
+/* Новые стили для settings.html */
+.settings-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #404040;
+    border-radius: 5px;
+    background-color: #333333; /* Лёгкий фон для выделения секций */
+}
+
+.settings-section legend {
+    font-weight: bold;
+    color: #ffffff;
+    padding: 0 10px;
+    font-size: 18px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+/* Стили для donate */
 .donate-section {
     margin-top: 20px;
     text-align: center;
@@ -228,7 +248,7 @@ a.submit-button {
 
 .donate-text {
     font-size: 16px;
-    color: #aaaaaa; /* Серый для текста донатов */
+    color: #d9d9d9;
 }
 
 p.donate-text {
@@ -236,13 +256,13 @@ p.donate-text {
 }
 
 .donate-link {
-    color: #ff5555; /* Красный для ссылки */
+    color: #00b7eb;
     text-decoration: none;
 }
 
 .donate-link:hover {
     text-decoration: underline;
-    color: #ff7777; /* Светлее при наведении */
+    color: #0099cc;
 }
 
 .donate-heart {
@@ -250,28 +270,4 @@ p.donate-text {
     height: 16px;
     vertical-align: middle;
     margin-left: 5px;
-}
-
-/* Стили для футера */
-#donate-copyright {
-    margin-top: 20px;
-    text-align: center;
-    padding: 10px;
-    background-color: #252525; /* Чуть темнее контейнера */
-    border-top: 1px solid #444444; /* Тёмная линия сверху */
-}
-
-#donate-copyright p {
-    margin: 5px 0;
-    font-size: 14px;
-    color: #cccccc; /* Светло-серый текст */
-}
-
-#donate-copyright a {
-    color: #ff5555; /* Красный для ссылок */
-    text-decoration: none;
-}
-
-#donate-copyright a:hover {
-    color: #ff7777; /* Светлее при наведении */
 }

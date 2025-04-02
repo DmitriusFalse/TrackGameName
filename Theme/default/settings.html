@@ -1,90 +1,141 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-	<link rel="stylesheet" href="/theme/{{.Config.Theme}}/styles.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>{{.T.settings}}</title>
+	<link rel="stylesheet" href="/theme/{{.Config.Theme}}/styles.css">
 </head>
 <body class="main-body page-settings">
 <div class="container">
 	<h2 class="settings-title">{{.T.settings}}</h2>
 	<form method="POST" action="/settings" class="settings-form">
-		<div class="form-group autorun-group checkbox-group">
-			<label class="label checkbox-label">{{.T.autorun}}:</label>
-			<input type="checkbox" name="autorun" {{if .Config.Autorun}}checked{{end}} class="checkbox">
-			<span class="description checkbox-desc">{{.T.autorun_desc}}</span>
-		</div>
-		<div class="form-group theme-group">
-			<label class="label">{{.T.theme}}:</label>
-			<select name="theme" class="input-field">
-				{{range .Themes}}
-				<option value="{{.}}" {{if eq . $.Config.Theme}}selected{{end}}>{{.}}</option>
-				{{end}}
-			</select>
-			<span class="description">{{.T.theme_desc}}</span>
-		</div>
-		<div class="form-group language-group">
-			<label class="label">{{.T.language}}:</label>
-			<select name="language" class="input-field">
-				{{range .Languages}}
-				<option value="{{.}}" {{if eq . $.Config.Language}}selected{{end}}>{{.}}</option>
-				{{end}}
-			</select>
-			<span class="description">{{.T.language_desc}}</span>
-		</div>
-		<div class="form-group web-port-group">
-			<label class="label">{{.T.web_port}}:</label>
-			<input type="number" name="web_port" value="{{.Config.WebPort}}" min="1" max="65535" class="input-field">
-			<span class="description">{{.T.web_port_desc}}</span>
-		</div>
-		<div class="form-group retroarch-path-group">
-			<label class="label">{{.T.retroarch_path}}:</label>
-			<input type="text" name="retroarch_path" value="{{.Config.RetroarchPath}}" class="input-field">
-			<span class="description">{{.T.retroarch_path_desc}}</span>
-		</div>
-		<div class="form-group output-to-files-group checkbox-group">
-			<label class="label checkbox-label">{{.T.output_to_files}}:</label>
-			<input type="checkbox" name="output_to_files" {{if .Config.OutputToFiles}}checked{{end}} class="checkbox">
-			<span class="description checkbox-desc">{{.T.output_to_files_desc}}</span>
-		</div>
-		<div class="form-group save-path-group">
-			<label class="label">{{.T.save_path}}:</label>
-			<input type="text" name="save_path" value="{{.Config.SavePath}}" class="input-field">
-			<span class="description">{{.T.save_path_desc}}</span>
-		</div>
-		<div class="form-group save-to-one-file-group checkbox-group">
-			<label class="label checkbox-label">{{.T.save_to_one_file}}:</label>
-			<input type="checkbox" name="save_to_one_file" {{if .Config.SaveToOneFile}}checked{{end}} class="checkbox">
-			<span class="description checkbox-desc">{{.T.save_to_one_file_desc}}</span>
-		</div>
-		<div class="form-group system-icon-group">
-			<label class="label">{{.T.system_icon}}:</label>
-			<input type="number" name="system_icon" value="{{.Config.SystemIcon}}" min="0" max="2" class="input-field">
-			<span class="description">{{.T.system_icon_desc}}</span>
-		</div>
-		<div class="form-group refresh-interval-group">
-			<label class="label">{{.T.refresh_interval}}:</label>
-			<input type="number" name="refresh_interval" value="{{.Config.RefreshInterval}}" min="1" class="input-field">
-			<span class="description">{{.T.refresh_interval_desc}}</span>
-		</div>
-		<div class="form-group enable-thumbnails-group checkbox-group">
-			<label class="label checkbox-label">{{.T.enable_thumbnails}}:</label>
-			<input type="checkbox" name="enable_thumbnails" {{if .Config.EnableThumbnails}}checked{{end}} class="checkbox">
-			<span class="description checkbox-desc">{{.T.enable_thumbnails_desc}}</span>
-		</div>
-		<div class="form-group thumbnails-path-group">
-			<label class="label">{{.T.thumbnails_path}}:</label>
-			<input type="text" name="thumbnails_path" value="{{.Config.ThumbnailsPath}}" class="input-field">
-			<span class="description">{{.T.thumbnails_path_desc}}</span>
-		</div>
-		<div class="form-group thumbnail-size-group">
-			<label class="label">{{.T.thumbnail_size}}:</label>
-			<input type="text" name="thumbnail_size" value="{{.Config.ThumbnailSize}}" class="input-field">
-			<span class="description">{{.T.thumbnail_size_desc}}</span>
-		</div>
-		<input type="submit" value="{{.T.save}}" class="submit-button">
-		<div class="nav-section">
+		<!-- Секция: Системные настройки -->
+		<fieldset class="settings-section">
+			<legend>{{.T.system_settings}}</legend>
+			<div class="form-group autorun-group checkbox-group">
+				<label class="label checkbox-label">{{.T.autorun}}:</label>
+				<input type="checkbox" name="autorun" {{if .Config.Autorun}}checked{{end}} class="checkbox">
+				<span class="description checkbox-desc">{{.T.autorun_desc}}</span>
+			</div>
+			<div class="form-group web-port-group">
+				<label class="label">{{.T.web_port}}:</label>
+				<input type="number" name="web_port" value="{{.Config.WebPort}}" min="1" max="65535" class="input-field">
+				<span class="description">{{.T.web_port_desc}}</span>
+			</div>
+			<div class="form-group language-group">
+				<label class="label">{{.T.language}}:</label>
+				<select name="language" class="input-field">
+					{{range .Languages}}
+					<option value="{{.}}" {{if eq . $.Config.Language}}selected{{end}}>{{.}}</option>
+					{{end}}
+				</select>
+				<span class="description">{{.T.language_desc}}</span>
+			</div>
+		</fieldset>
+
+		<!-- Секция: Интерфейс и отображение -->
+		<fieldset class="settings-section">
+			<legend>{{.T.interface_settings}}</legend>
+			<div class="form-group theme-group">
+				<label class="label">{{.T.theme}}:</label>
+				<select name="theme" class="input-field">
+					{{range .Themes}}
+					<option value="{{.}}" {{if eq . $.Config.Theme}}selected{{end}}>{{.}}</option>
+					{{end}}
+				</select>
+				<span class="description">{{.T.theme_desc}}</span>
+			</div>
+			<div class="form-group system-icon-group">
+				<label class="label">{{.T.system_icon}}:</label>
+				<input type="number" name="system_icon" value="{{.Config.SystemIcon}}" min="0" max="2" class="input-field">
+				<span class="description">{{.T.system_icon_desc}}</span>
+			</div>
+			<div class="form-group update-interval-group">
+				<label for="update_interval">{{.T.update_interval_label}}:</label>
+				<input type="number" id="update_interval" name="update_interval" value="{{.Config.UpdateInterval}}" min="1" class="input-field">
+				<span class="description">{{.T.update_interval_help}}</span>
+			</div>
+		</fieldset>
+
+		<!-- Секция: Пути и сохранение -->
+		<fieldset class="settings-section">
+			<legend>{{.T.paths_and_saving}}</legend>
+			<div class="form-group retroarch-path-group">
+				<label class="label">{{.T.retroarch_path}}:</label>
+				<input type="text" name="retroarch_path" value="{{.Config.RetroarchPath}}" class="input-field">
+				<span class="description">{{.T.retroarch_path_desc}}</span>
+			</div>
+			<div class="form-group save-path-group">
+				<label class="label">{{.T.save_path}}:</label>
+				<input type="text" name="save_path" value="{{.Config.SavePath}}" class="input-field">
+				<span class="description">{{.T.save_path_desc}}</span>
+			</div>
+			<div class="form-group save-to-one-file-group checkbox-group">
+				<label class="label checkbox-label">{{.T.save_to_one_file}}:</label>
+				<input type="checkbox" name="save_to_one_file" {{if .Config.SaveToOneFile}}checked{{end}} class="checkbox">
+				<span class="description checkbox-desc">{{.T.save_to_one_file_desc}}</span>
+			</div>
+			<div class="form-group output-to-files-group checkbox-group">
+				<label class="label checkbox-label">{{.T.output_to_files}}:</label>
+				<input type="checkbox" name="output_to_files" {{if .Config.OutputToFiles}}checked{{end}} class="checkbox">
+				<span class="description checkbox-desc">{{.T.output_to_files_desc}}</span>
+			</div>
+		</fieldset>
+
+		<!-- Секция: Миниатюры -->
+		<fieldset class="settings-section">
+			<legend>{{.T.thumbnails_settings}}</legend>
+			<div class="form-group enable-thumbnails-group checkbox-group">
+				<label class="label checkbox-label">{{.T.enable_thumbnails}}:</label>
+				<input type="checkbox" name="enable_thumbnails" {{if .Config.EnableThumbnails}}checked{{end}} class="checkbox">
+				<span class="description checkbox-desc">{{.T.enable_thumbnails_desc}}</span>
+			</div>
+			<div class="form-group thumbnails-path-group">
+				<label class="label">{{.T.thumbnails_path}}:</label>
+				<input type="text" name="thumbnails_path" value="{{.Config.ThumbnailsPath}}" class="input-field">
+				<span class="description">{{.T.thumbnails_path_desc}}</span>
+			</div>
+			<div class="form-group thumbnail-size-group">
+				<label class="label">{{.T.thumbnail_size}}:</label>
+				<input type="text" name="thumbnail_size" value="{{.Config.ThumbnailSize}}" class="input-field">
+				<span class="description">{{.T.thumbnail_size_desc}}</span>
+			</div>
+			<div class="form-group alternate-thumbnails-group checkbox-group">
+				<label for="alternate_thumbnails">{{.T.alternate_thumbnails_label}}:</label>
+				<input type="checkbox" id="alternate_thumbnails" name="alternate_thumbnails" {{if .Config.AlternateThumbnails}}checked{{end}} class="checkbox">
+				<span class="description">{{.T.alternate_thumbnails_help}}</span>
+			</div>
+			<div class="form-group thumbnail-switch-interval-group">
+				<label for="thumbnail_switch_interval">{{.T.thumbnail_switch_interval_label}}:</label>
+				<input type="number" id="thumbnail_switch_interval" name="thumbnail_switch_interval" value="{{.Config.ThumbnailSwitchInterval}}" min="1" class="input-field">
+				<span class="description">{{.T.thumbnail_switch_interval_help}}</span>
+			</div>
+			<div class="form-group fade-duration-group">
+				<label for="fade_duration">{{.T.fade_duration_label}}:</label>
+				<input type="number" id="fade_duration" name="fade_duration" value="{{.Config.FadeDuration}}" min="0.1" step="0.1" oninput="this.value = this.value.replace(',', '.')" class="input-field">
+				<span class="description">{{.T.fade_duration_help}}</span>
+			</div>
+			<div class="form-group fade-type-group">
+				<label for="fade_type">{{.T.fade_type_label}}:</label>
+				<select id="fade_type" name="fade_type" class="input-field">
+					<option value="ease" {{if eq .Config.FadeType "ease"}}selected{{end}}>Ease</option>
+					<option value="ease-in" {{if eq .Config.FadeType "ease-in"}}selected{{end}}>Ease In</option>
+					<option value="ease-out" {{if eq .Config.FadeType "ease-out"}}selected{{end}}>Ease Out</option>
+					<option value="ease-in-out" {{if eq .Config.FadeType "ease-in-out"}}selected{{end}}>Ease In Out</option>
+					<option value="linear" {{if eq .Config.FadeType "linear"}}selected{{end}}>Linear</option>
+				</select>
+				<span class="description">{{.T.fade_type_help}}</span>
+			</div>
+		</fieldset>
+
+		<!-- Кнопка сохранения и навигация -->
+		<div class="form-actions">
+			<input type="submit" value="{{.T.save}}" class="submit-button">
 			<a href="/" class="home-link">{{.T.home}}</a>
 		</div>
 	</form>
 </div>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92a27e4bbadcb136',t:'MTc0MzYxOTYzMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
