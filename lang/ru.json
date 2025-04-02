@@ -76,5 +76,8 @@
   "system_settings": "Системные настройки",
   "interface_settings": "Интерфейс и отображение",
   "paths_and_saving": "Пути и сохранение",
-  "thumbnails_settings": "Миниатюры"
+  "thumbnails_settings": "Миниатюры",
+  "open_settings": "Открыть настройки",
+  "open_settings_tip": "Открыть страницу настроек в браузере",
+  "settings_page_opened": "Страница настроек открыта в браузере"
 }

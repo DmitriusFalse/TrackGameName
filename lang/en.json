@@ -75,5 +75,8 @@
   "system_settings": "System Settings",
   "interface_settings": "Interface and Display",
   "paths_and_saving": "Paths and Saving",
-  "thumbnails_settings": "Thumbnails"
+  "thumbnails_settings": "Thumbnails",
+  "open_settings": "Open Settings",
+  "open_settings_tip": "Open the settings page in your browser",
+  "settings_page_opened": "Settings page opened in browser"
 }

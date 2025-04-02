@@ -926,6 +926,8 @@ func onReady(savePath string) func() {
 		consoleItem := systray.AddMenuItem(translations["system_not_detected"], translations["system_not_detected"])
 		systray.AddSeparator()
 		openWebItem := systray.AddMenuItem(translations["open_web_page"], translations["open_web_page_tip"])
+		// Добавляем новый пункт "Открыть настройки"
+		openSettingsItem := systray.AddMenuItem(translations["open_settings"], translations["open_settings_tip"])
 		quitItem := systray.AddMenuItem(translations["exit"], translations["exit_tip"])
 		log.Println(translations["menu_items_added"])
 
@@ -1007,6 +1009,16 @@ func onReady(savePath string) func() {
 						log.Printf("Error opening browser: %v", err)
 					} else {
 						log.Println(translations["web_page_opened"])
+					}
+				case <-openSettingsItem.ClickedCh: // Обработка клика на "Открыть настройки"
+					configMutex.RLock()
+					url := fmt.Sprintf("http://localhost:%d/settings", config.WebPort)
+					configMutex.RUnlock()
+					err := openBrowser(url)
+					if err != nil {
+						log.Printf("Error opening settings page: %v", err)
+					} else {
+						log.Println(translations["settings_page_opened"])
 					}
 				case <-quitItem.ClickedCh:
 					log.Println("Exit clicked received")
