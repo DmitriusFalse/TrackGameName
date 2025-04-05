@@ -22,6 +22,8 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+var appVersion = "dev-build"
+
 //go:embed active.ico
 var activeIcon []byte
 
@@ -424,6 +426,7 @@ func startWebServer(port int) {
 			AlternateThumbnails     bool
 			ThumbnailSwitchInterval int
 			UpdateInterval          int
+			Version                 string // Добавляем поле для версии
 		}{
 			Running:                 isRetroarchRunning(),
 			CurrentGame:             currentGame,
@@ -437,6 +440,7 @@ func startWebServer(port int) {
 			AlternateThumbnails:     config.AlternateThumbnails,
 			ThumbnailSwitchInterval: config.ThumbnailSwitchInterval,
 			UpdateInterval:          config.UpdateInterval,
+			Version:                 appVersion, // Устанавливаем версию
 		}
 
 		thumbnailPaths, thumbnailWidth, thumbnailHeight := getThumbnailPaths(config, currentConsole, currentGame, config.Theme)
