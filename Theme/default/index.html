@@ -20,17 +20,41 @@
 	{{end}}
 	<div class="nav-section">
 		<a href="/settings" class="submit-button">{{.T.settings}}</a>
+		<a href="/settings-games" class="submit-button">{{.T.settings_template}}</a>
 	</div>
 
 	<h3 class="endpoints-title">{{.T.endpoints_title}}:</h3>
 	<ul class="endpoints-list">
-		<li class="endpoint-item"><a href="/game" class="endpoint-link">{{.T.endpoint_game}}</a></li>
-		<li class="endpoint-item"><a href="/system" class="endpoint-link">{{.T.endpoint_system}}</a></li>
-		<li class="endpoint-item"><a href="/all" class="endpoint-link">{{.T.endpoint_all}}</a></li>
-		<li class="endpoint-item"><a href="/thumbnails" class="endpoint-link">{{.T.endpoint_thumbnails}}</a></li>
-		<li class="endpoint-item"><a href="/settings" class="endpoint-link">{{.T.endpoint_settings}}</a></li>
+		<li class="endpoint-item"><a target="_blank" href="/game" class="endpoint-link">{{.T.endpoint_game}}</a>
+			<img title="{{.T.help_copy}}" src="/theme/default/copy.png" alt="http://localhost:{{.Port}}/game" onclick="copyToClipboard(event)" width="24px" class="copy-icon">
+		</li>
+		<li class="endpoint-item"><a target="_blank" href="/system" class="endpoint-link">{{.T.endpoint_system}}</a>
+			<img title="{{.T.help_copy}}" src="/theme/default/copy.png" alt="http://localhost:{{.Port}}/system" onclick="copyToClipboard(event)" width="24px" class="copy-icon">
+		</li>
+		<li class="endpoint-item"><a target="_blank" href="/all" class="endpoint-link">{{.T.endpoint_all}}</a>
+			<img title="{{.T.help_copy}}" src="/theme/default/copy.png" alt="http://localhost:{{.Port}}/all" onclick="copyToClipboard(event)" width="24px" class="copy-icon">
+		</li>
+		<li class="endpoint-item"><a target="_blank" href="/thumbnails" class="endpoint-link">{{.T.endpoint_thumbnails}}</a>
+			<img title="{{.T.help_copy}}" src="/theme/default/copy.png" alt="http://localhost:{{.Port}}/thumbnails" onclick="copyToClipboard(event)" width="24px" class="copy-icon">
+		</li>
 	</ul>
 	<p class="version-text">Version: {{.Version}}</p>
 </div>
+<script>
+	function copyToClipboard(event) {
+		const altText = event.target.alt; // Получаем текст из атрибута alt
+		if (altText) {
+			navigator.clipboard.writeText(altText)
+					.then(() => {
+						alert("Текст скопирован: " + altText);
+					})
+					.catch(err => {
+						console.error("Ошибка копирования текста: ", err);
+					});
+		} else {
+			alert("Атрибут alt пустой!");
+		}
+	}
+</script>
 </body>
 </html>

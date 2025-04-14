@@ -11,22 +11,43 @@
 		<span class="game-text" id="game">{{.CurrentGame}}</span>
 	</div>
 	<script>
-		const updateInterval = {{.UpdateInterval}} * 1000; // Переводим секунды в миллисекунды
 		let lastGame = "{{.CurrentGame}}";
+		let socket;
+		let reconnectDelay = 5000;
 
-		function updateGame() {
-			fetch('/game/data')
-					.then(response => response.json())
-					.then(data => {
-						if (data.current_game !== lastGame) {
-							document.getElementById('game').textContent = data.current_game;
-							lastGame = data.current_game;
-						}
-					})
-					.catch(error => console.error('Error fetching game data:', error));
+		window.onload = function() {
+			connectWebSocket()
+		};
+		function connectWebSocket() {
+			socket = new WebSocket(`ws://localhost:{{.Port}}/startport`);
+
+			socket.onopen = () => {
+				console.log("✅ WebSocket подключён");
+
+				// Пример регистрации страницы
+				socket.send(JSON.stringify({ type: "register", screen: "game" }));
+			};
+
+			socket.onmessage = (event) => {
+				const data = JSON.parse(event.data);
+				if (data.type === "update" && data.screen === "game") {
+					if (data.payload.game !== lastGame) {
+						document.getElementById('game').textContent = data.payload.game;
+						lastGame = data.payload.game;
+					}
+
+				}
+			};
+
+			socket.onerror = (err) => {
+				console.warn("⚠️ WebSocket ошибка:", err);
+			};
+
+			socket.onclose = () => {
+				console.warn("❌ WebSocket отключён. Попытка переподключения через", reconnectDelay / 1000, "сек.");
+				setTimeout(connectWebSocket, reconnectDelay);
+			};
 		}
-
-		setInterval(updateGame, updateInterval);
 	</script>
 </body>
 </html>

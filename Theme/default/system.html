@@ -10,33 +10,51 @@
 <div class="container">
 	{{if .SystemIcon}}
 	{{if .IconFile}}
-	<img src="/systems/{{.IconFile}}" alt="{{.CurrentConsole}} icon">
+	<img id="icon-system" src="/systems/{{.IconFile}}" alt="{{.CurrentConsole}} icon">
 	{{end}}
 	{{end}}
 	<span class="system-text" id="system">{{.CurrentConsole}}</span>
 </div>
 <script>
-	const updateInterval = {{.UpdateInterval}} * 1000;
 	let lastSystem = "{{.CurrentConsole}}";
+	let IconFile = "{{.IconFile}}";
 
-	function updateSystem() {
-		fetch('/system/data')
-				.then(response => response.json())
-				.then(data => {
-					if (data.current_console !== lastSystem) {
-						document.getElementById('system').textContent = data.current_console;
-						{{if .SystemIcon}}
-						if (data.icon_file) {
-							document.querySelector('img').src = '/systems/' + data.icon_file;
-						}
-						{{end}}
-						lastSystem = data.current_console;
+	const socket = new WebSocket("ws://localhost:3489/startport");
+
+	socket.onopen = () => {
+		socket.send(JSON.stringify({ type: "register", screen: "system" }));
+	};
+	socket.onmessage = (event) => {
+		const data = JSON.parse(event.data);
+		if (data.type === "update" && data.screen === "system") {
+			if (data.payload.console !== lastSystem) {
+				document.getElementById('system').textContent = data.payload.console;
+				lastSystem = data.payload.console;
+			}
+			if(IconFile !==data.payload.icon){ //Если иконка меняется
+				if (data.payload.icon !== "") { //Если иконка не пустая
+					IconFile = data.payload.icon;
+					const imgSystem = document.querySelector('img#icon-system');
+					if (imgSystem) { // проверяем, есть ли вывод картинки да - меняем картинку
+						imgSystem.src =  '/systems/'+data.payload.icon;
+					} else { // нет - создаем вывод и добавляем
+						const img = document.createElement('img');
+						img.src = '/systems/'+data.payload.icon;
+						img.alt = data.payload.console;
+						img.id = "icon-system";
+						const spanSystem = document.getElementById('system');
+						spanSystem.before(img);
 					}
-				})
-				.catch(error => console.error('Error fetching system data:', error));
-	}
+				}else{
+					const imgSystem = document.querySelector('img#icon-system');
+					if (imgSystem) {
+						imgSystem.remove();
+					}
+				}
+			}
 
-	setInterval(updateSystem, updateInterval);
+		}
+	};
 </script>
 </body>
 </html>

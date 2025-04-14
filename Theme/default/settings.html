@@ -27,7 +27,7 @@
 				<label class="label">{{.T.language}}:</label>
 				<select name="language" class="input-field">
 					{{range .Languages}}
-					<option value="{{.}}" {{if eq . $.Config.Language}}selected{{end}}>{{.}}</option>
+						<option value="{{.Code}}" {{if eq .Code $.Config.Language}}selected{{end}}>{{.Name}}</option>
 					{{end}}
 				</select>
 				<span class="description">{{.T.language_desc}}</span>
@@ -51,11 +51,7 @@
 				<input type="number" name="system_icon" value="{{.Config.SystemIcon}}" min="0" max="2" class="input-field">
 				<span class="description">{{.T.system_icon_desc}}</span>
 			</div>
-			<div class="form-group update-interval-group">
-				<label for="update_interval">{{.T.update_interval_label}}:</label>
-				<input type="number" id="update_interval" name="update_interval" value="{{.Config.UpdateInterval}}" min="1" class="input-field">
-				<span class="description">{{.T.update_interval_help}}</span>
-			</div>
+
 		</fieldset>
 
 		<!-- Секция: Пути и сохранение -->
@@ -102,22 +98,22 @@
 				<span class="description">{{.T.thumbnail_size_desc}}</span>
 			</div>
 			<div class="form-group alternate-thumbnails-group checkbox-group">
-				<label for="alternate_thumbnails">{{.T.alternate_thumbnails_label}}:</label>
+				<label class="label" for="alternate_thumbnails">{{.T.alternate_thumbnails_label}}:</label>
 				<input type="checkbox" id="alternate_thumbnails" name="alternate_thumbnails" {{if .Config.AlternateThumbnails}}checked{{end}} class="checkbox">
 				<span class="description">{{.T.alternate_thumbnails_help}}</span>
 			</div>
 			<div class="form-group thumbnail-switch-interval-group">
-				<label for="thumbnail_switch_interval">{{.T.thumbnail_switch_interval_label}}:</label>
+				<label class="label" for="thumbnail_switch_interval">{{.T.thumbnail_switch_interval_label}}:</label>
 				<input type="number" id="thumbnail_switch_interval" name="thumbnail_switch_interval" value="{{.Config.ThumbnailSwitchInterval}}" min="1" class="input-field">
 				<span class="description">{{.T.thumbnail_switch_interval_help}}</span>
 			</div>
 			<div class="form-group fade-duration-group">
-				<label for="fade_duration">{{.T.fade_duration_label}}:</label>
+				<label class="label" for="fade_duration">{{.T.fade_duration_label}}:</label>
 				<input type="number" id="fade_duration" name="fade_duration" value="{{.Config.FadeDuration}}" min="0.1" step="0.1" oninput="this.value = this.value.replace(',', '.')" class="input-field">
 				<span class="description">{{.T.fade_duration_help}}</span>
 			</div>
 			<div class="form-group fade-type-group">
-				<label for="fade_type">{{.T.fade_type_label}}:</label>
+				<label class="label" for="fade_type">{{.T.fade_type_label}}:</label>
 				<select id="fade_type" name="fade_type" class="input-field">
 					<option value="ease" {{if eq .Config.FadeType "ease"}}selected{{end}}>Ease</option>
 					<option value="ease-in" {{if eq .Config.FadeType "ease-in"}}selected{{end}}>Ease In</option>

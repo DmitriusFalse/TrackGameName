@@ -1,0 +1,50 @@
+[
+    {
+        "process_name": "Supermarket Simulator.exe",
+        "window_title": "Supermarket Simulator",
+        "system": "Windows",
+        "game": "Supermarket Simulator",
+        "named_titles": "Windows\\Named_Titles\\Supermarket Simulator.png",
+        "named_boxarts": ""
+    },
+    {
+        "process_name": "Bio Prototype.exe",
+        "window_title": "Bio Prototype",
+        "system": "Windows",
+        "game": "Bio Prototype",
+        "named_titles": "Windows\\Named_Titles\\Bio Prototype.png",
+        "named_boxarts": ""
+    },
+    {
+        "process_name": "Schedule I.exe",
+        "window_title": "Schedule I",
+        "system": "Windows",
+        "game": "Schedule I",
+        "named_titles": "Windows\\Named_Titles\\Schedule I.png",
+        "named_boxarts": ""
+    },
+    {
+        "process_name": "OPENNOX-HD.EXE",
+        "window_title": "Open Nox",
+        "system": "Windows",
+        "game": "OPENNOX-HD.EXE",
+        "named_titles": "Windows\\Named_Titles\\OPENNOX-HD.EXE.png",
+        "named_boxarts": "Windows\\Named_Boxarts\\OPENNOX-HD.EXE.png"
+    },
+    {
+        "process_name": "RoboQuest-Win64-Shipping.exe",
+        "window_title": "RoboQuest  ",
+        "system": "Windows",
+        "game": "RoboQuest-Win64-Shipping",
+        "named_titles": "Windows\\Named_Titles\\RoboQuest.png",
+        "named_boxarts": "Windows\\Named_Boxarts\\RoboQuest.png"
+    },
+    {
+        "process_name": "retroarch.exe",
+        "window_title": "RetroArch",
+        "system": "",
+        "game": "",
+        "named_titles": "",
+        "named_boxarts": ""
+    }
+]

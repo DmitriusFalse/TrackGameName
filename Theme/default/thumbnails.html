@@ -14,23 +14,67 @@
 </div>
 
 <script>
-    const updateInterval = {{.UpdateInterval}} * 1000;
     const fadeDuration = {{.FadeDuration}} * 1000;
     const fadeType = "{{.FadeType}}";
     let lastGame = "{{.CurrentGame}}";
-    let lastConsole = "{{.CurrentConsole}}";
     let lastThumbnails = [];
-    let currentThumbnailIndex = 0;
-    let thumbnailInterval = null;
+    let currentThumbnailIndex = 1;
+    let thumbnailInterval = 30;
+    let width = {{.Width}};
+    let height = {{.Height}};
+    let intervalId;
+    const intervalDelay = {{.ThumbnailSwitchInterval}} * 1000;
+    const container = document.querySelector('.thumbnail-container');
 
-    function arraysEqual(a, b) {
-        if (a.length !== b.length) return false;
-        for (let i = 0; i < a.length; i++) {
-            if (a[i] !== b[i]) return false;
+    window.onload = function() {
+        lastThumbnails = container.querySelectorAll("img");
+        startThumbnailInterval(container)
+        setSizeContainer(container, width, height, container.querySelector("img"))
+        connectWebSocket()
+    };
+    function startThumbnailInterval(container) {
+        if (intervalId) {
+            clearInterval(intervalId);
         }
-        return true;
-    }
 
+        // Запускаем новый интервал
+        intervalId = setInterval(() => {
+            switchToNextThumbnail(container);
+        }, intervalDelay);
+    }
+    function setSizeContainer(container, width, height, img) {
+        let finalWidth = 0;
+        let finalHeight = 0;
+
+        let aspectRatio = img.naturalWidth / img.naturalHeight;
+        if (height >0 && width === 0) {
+            console.log("1")
+            finalHeight = height + 'px';
+            finalWidth = Math.round(aspectRatio * height)+'px';
+        }else if(height === 0 && width > 0){
+            console.log("2")
+            finalHeight = Math.round(aspectRatio*width)+'px';
+            finalWidth  = width + 'px';
+            console.log(aspectRatio)
+            console.log(finalHeight)
+            console.log(finalWidth)
+            console.log(width)
+        }else if(height > 0 && width > 0){
+            console.log("3")
+            finalHeight = height + 'px';
+            finalWidth  = width + 'px';
+        }else{
+            console.log("4")
+            finalHeight = img.naturalHeight + 'px';
+            finalWidth  = img.naturalWidth + 'px';
+        }
+
+        container.style.minHeight = finalHeight;
+        container.style.minWidth = finalWidth;
+        container.style.height = finalHeight;
+        container.style.width = finalWidth;
+
+    }
     document.head.insertAdjacentHTML("beforeend", `
     <style>
         .container.thumbnail-container {
@@ -41,6 +85,8 @@
             transition: height ${fadeDuration / 1000}s ${fadeType};
         }
         .thumbnail {
+            width: 100%;
+            height: 100%;
             position: absolute;
             object-fit: contain;
             transition: opacity ${fadeDuration / 1000}s ${fadeType};
@@ -54,137 +100,83 @@
     </style>
     `);
 
-    function setThumbnailSize(container, thumbnails, desiredWidth, desiredHeight) {
-        // Парсим желаемые размеры
-        const hasWidth = desiredWidth && desiredWidth !== "0";
-        const hasHeight = desiredHeight && desiredHeight !== "0";
-        const widthPx = hasWidth ? parseInt(desiredWidth) : null;
-        const heightPx = hasHeight ? parseInt(desiredHeight) : null;
-
-        // Находим максимальную ширину среди всех изображений
-        let maxWidth = 0;
-        thumbnails.forEach(img => {
-            if (img.complete) {
-                maxWidth = Math.max(maxWidth, img.naturalWidth);
-            } else {
-                img.onload = () => {
-                    maxWidth = Math.max(maxWidth, img.naturalWidth);
-                    applySize(thumbnails[currentThumbnailIndex], true); // Пересчитываем после загрузки
-                };
-            }
-        });
-
-        function applySize(currentImg, isReload = false) {
-            let finalWidth, finalHeight;
-            const aspectRatio = currentImg.naturalWidth / currentImg.naturalHeight;
-
-            if (hasWidth && hasHeight) {
-                // Жёсткий размер (например, 200x200)
-                finalWidth = widthPx;
-                finalHeight = heightPx;
-            } else if (hasWidth) {
-                // Фиксированная ширина (например, 200x), высота по соотношению
-                finalWidth = widthPx;
-                finalHeight = Math.round(widthPx / aspectRatio);
-            } else if (hasHeight) {
-                // Фиксированная высота (например, x367), ширина — максимальная
-                finalHeight = heightPx;
-                finalWidth = maxWidth;
-            } else {
-                // Натуральный размер с максимальной шириной
-                finalWidth = maxWidth;
-                finalHeight = Math.round(maxWidth / aspectRatio);
-            }
-
-            // Устанавливаем размеры картинке
-            currentImg.style.width = finalWidth + 'px';
-            currentImg.style.height = finalHeight + 'px';
-            // Устанавливаем размеры контейнеру
-            if (isReload || !container.style.width) {
-                container.style.width = finalWidth + 'px'; // Фиксируем ширину один раз или при перезагрузке
-            }
-            container.style.height = finalHeight + 'px'; // Высота меняется для каждой картинки
+    function switchToNextThumbnail(container) {
+        thumbnails = container.querySelectorAll('img');
+        thumbnails[currentThumbnailIndex].className = 'thumbnail hidden';
+        thumbnails[currentThumbnailIndex].style = "opacity: 0;";
+        let nextIndex = (currentThumbnailIndex + 1) % thumbnails.length;
+        while (nextIndex !== currentThumbnailIndex && thumbnails[nextIndex].classList.contains('error')) {
+            nextIndex = (nextIndex + 1) % thumbnails.length;
         }
-
-        // Применяем размер для текущего изображения
-        const currentImg = thumbnails[currentThumbnailIndex];
-        if (currentImg.complete) {
-            applySize(currentImg);
-        } else {
-            currentImg.onload = () => applySize(currentImg);
-        }
+        currentThumbnailIndex = nextIndex;
+        thumbnails[currentThumbnailIndex].className = 'thumbnail visible';
+        thumbnails[currentThumbnailIndex].style = "opacity: 1;";
+        setSizeContainer(container, width, height, thumbnails[currentThumbnailIndex]);
     }
 
-    function updateThumbnails() {
-        const container = document.querySelector('.thumbnail-container');
-        if (!container) {
-            console.error('Thumbnail container not found');
-            return;
-        }
+    let socket;
+    let reconnectDelay = 5000;
 
-        fetch('/thumbnails/data')
-            .then(response => response.json())
-            .then(data => {
-                console.log('Fetched data:', data);
+    function connectWebSocket() {
+        socket = new WebSocket(`ws://localhost:{{.Port}}/startport`);
 
-                const gameChanged = data.current_game !== lastGame || data.current_console !== lastConsole;
-                const thumbnailsChanged = !arraysEqual(data.thumbnail_paths || [], lastThumbnails);
+        socket.onopen = () => {
+            console.log("✅ WebSocket подключён");
 
-                if (gameChanged || thumbnailsChanged) {
-                    if (thumbnailInterval) {
-                        clearInterval(thumbnailInterval);
-                        thumbnailInterval = null;
-                    }
+            // Пример регистрации страницы
+            socket.send(JSON.stringify({ type: "register", screen: "thumbnails" }));
+        };
 
-                    lastGame = data.current_game;
-                    lastConsole = data.current_console;
-                    lastThumbnails = data.thumbnail_paths || [];
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === "update" && data.screen === "thumbnails") {
+                if (lastGame !==data.payload.game){
+                    console.log(data.payload)
+                    lastThumbnails = data.payload.paths || [];
                     currentThumbnailIndex = 0;
-
-                    container.innerHTML = '';
-                    if (!lastThumbnails.length) {
-                        console.warn('No thumbnails found, displaying placeholder.');
-                        const img = document.createElement('img');
-                        img.src = '/theme/default/noimage.png?cache=' + Date.now();
-                        img.className = 'thumbnail visible';
-                        img.alt = 'No Thumbnail';
-                        container.appendChild(img);
-                        setThumbnailSize(container, [img], data.thumbnail_width, data.thumbnail_height);
-                    } else {
-                        const thumbnails = [];
-                        lastThumbnails.forEach((path, index) => {
-                            const img = document.createElement('img');
-                            img.src = path + '?cache=' + Date.now();
-                            img.className = 'thumbnail ' + (index === 0 ? 'visible' : 'hidden');
-                            img.alt = 'Thumbnail';
-                            container.appendChild(img);
-                            thumbnails.push(img);
-                        });
-
-                        // Устанавливаем размер для всех изображений сразу
-                        setThumbnailSize(container, thumbnails, data.thumbnail_width, data.thumbnail_height);
-
-                        if (lastThumbnails.length > 1 && {{.AlternateThumbnails}}) {
-                            const thumbnailsElements = container.querySelectorAll('.thumbnail');
-                            thumbnailInterval = setInterval(() => {
-                                thumbnailsElements[currentThumbnailIndex].className = 'thumbnail hidden';
-                                currentThumbnailIndex = (currentThumbnailIndex + 1) % thumbnailsElements.length;
-                                thumbnailsElements[currentThumbnailIndex].className = 'thumbnail visible';
-                                // Пересчитываем только высоту для текущего изображения
-                                setThumbnailSize(container, thumbnailsElements, data.thumbnail_width, data.thumbnail_height);
-                            }, {{.ThumbnailSwitchInterval}} * 1000);
-                        }
-                    }
+                    update(lastThumbnails,currentThumbnailIndex, data.payload.width, data.payload.height);
                 }
-            })
-            .catch(error => console.error('Error fetching thumbnails data:', error));
-    }
+            }
+        };
 
-    window.onload = () => {
-        updateThumbnails();
-        setInterval(updateThumbnails, updateInterval);
-    };
+        socket.onerror = (err) => {
+            console.warn("⚠️ WebSocket ошибка:", err);
+        };
+
+        socket.onclose = () => {
+            console.warn("❌ WebSocket отключён. Попытка переподключения через", reconnectDelay / 1000, "сек.");
+            setTimeout(connectWebSocket, reconnectDelay);
+        };
+    }
+    function update(lastThumbnails,currentThumbnailIndex, width, height){
+        container.innerHTML = '';
+        console.log(lastThumbnails);
+        if (!lastThumbnails.length) {
+            console.warn('No thumbnails found, displaying placeholder.');
+            const img = document.createElement('img');
+            img.src = '/theme/default/noimage.png?cache=' + Date.now();
+            img.className = 'thumbnail visible';
+            img.alt = 'No Thumbnail';
+            container.appendChild(img);
+            setSizeContainer(container, width, height, img);
+        } else {
+            const thumbnails = [];
+            lastThumbnails.forEach((path, index) => {
+                const img = document.createElement('img');
+                img.src = path + '?cache=' + Date.now();
+                img.className = 'thumbnail ' + (index === 0 ? 'visible' : 'hidden');
+                img.alt = 'Thumbnail';
+                img.onerror = () => {
+                    img.classList.add('error');
+                    console.warn(`Failed to load image: ${path}`);
+                    if (index === 0) switchToNextThumbnail(thumbnails);
+                };
+                container.appendChild(img);
+                thumbnails.push(img);
+            });
+        }
+        startThumbnailInterval(container);
+    }
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92a38bc4d9fa69e7',t:'MTc0MzYzMDY2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
