@@ -1,3 +1,9 @@
+{{/* ВНИМАНИЕ!*/}}
+{{/*Не изменяйте разметку, без понимания, что вы делаете!*/}}
+{{/*Следите, чтобы классы и идентификаторы присутствовали на свои местах.*/}}
+{{/* ATTENTION!*/}}
+{{/*Do not change the markup without understanding what you are doing!*/}}
+{{/*Make sure that classes and IDs are present in their proper places.*/}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +11,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>All - TrackGameName</title>
 	<link rel="stylesheet" href="/theme/{{.Theme}}/styles.css">
+	<script src="/theme/default/js/all.js"></script>
 </head>
 <body class="main-body page-all info">
 <div class="container">
@@ -18,72 +25,22 @@
 	<span class="game-text" id="game">{{.CurrentGame}}</span>
 </div>
 <script>
-
+	// ВНИМАНИЕ!
+	// В этом файле находятся настройки для работы скриптов.
+	// Если вы хотите изменить настройки, то вы не хотите их менять!!!
+	// ATTENTION!
+	// This file contains the settings for the scripts to work.
+	// If you want to change the settings, then you don't want to change them!!!
+	// DO NOT REMOVE!
+	// It is necessary for the scripts to work correctly.
+	// НЕ УДАЛЯТЬ!
+	// Это необходимо для корректной работы скриптов.
 	let lastGame = "{{.CurrentGame}}";
 	let lastSystem = "{{.CurrentConsole}}";
 	let IconFile = "{{.IconFile}}";
-
 	let socket;
 	let reconnectDelay = 5000;
-	window.onload = function() {
-		connectWebSocket()
-	};
-	function connectWebSocket() {
-		socket = new WebSocket(`ws://localhost:{{.Port}}/startport`);
-
-		socket.onopen = () => {
-			console.log("✅ WebSocket подключён");
-
-			// Пример регистрации страницы
-			socket.send(JSON.stringify({ type: "register", screen: "all" }));
-		};
-
-		socket.onmessage = (event) => {
-			const data = JSON.parse(event.data);
-			if (data.type === "update" && data.screen === "all") {
-				if (data.payload.game !== lastGame) {
-					document.getElementById('game').textContent = data.payload.game;
-					lastGame = data.payload.game;
-				}
-				if (data.payload.console !== lastSystem) {
-					document.getElementById('system').textContent = data.payload.console;
-					lastSystem = data.payload.console;
-				}
-
-				if(IconFile !==data.payload.icon){
-					if (data.payload.icon !== "") {
-						IconFile = data.payload.icon;
-						const imgSystem = document.querySelector('img#icon-system');
-						if (imgSystem) {
-							imgSystem.src =  '/systems/'+data.payload.icon;
-						} else {
-							const img = document.createElement('img');
-							img.src = '/systems/'+data.payload.icon;
-							img.alt = data.payload.console;
-							img.id = "icon-system";
-							const spanSystem = document.getElementById('system');
-							spanSystem.before(img);
-						}
-					}else{
-						const imgSystem = document.querySelector('img#icon-system');
-						if (imgSystem) {
-							imgSystem.remove();
-						}
-					}
-				}
-
-			}
-		};
-
-		socket.onerror = (err) => {
-			console.warn("⚠️ WebSocket ошибка:", err);
-		};
-
-		socket.onclose = () => {
-			console.warn("❌ WebSocket отключён. Попытка переподключения через", reconnectDelay / 1000, "сек.");
-			setTimeout(connectWebSocket, reconnectDelay);
-		};
-	}
+	let port = "{{.Port}}";
 </script>
 </body>
 </html>

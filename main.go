@@ -1402,7 +1402,6 @@ func onReady(savePath string) func() {
 		var initialized bool
 		lastGame := ""
 		lastConsole := ""
-
 		updateInfo := func(console, game string) {
 			configMutex.Lock()
 			if config.OutputToFiles {
@@ -1469,10 +1468,10 @@ func onReady(savePath string) func() {
 				if !initialized || currentState != lastState { // если состояние изменилось
 					if currentState && len(activeIcon) > 0 {
 						systray.SetIcon(activeIcon)
-						log.Println(translations["retroarch_running_icon"])
+						//log.Println(translations["retroarch_running_icon"])
 					} else if len(inactiveIcon) > 0 {
 						systray.SetIcon(inactiveIcon)
-						log.Println(translations["retroarch_closed_icon"])
+						//log.Println(translations["retroarch_closed_icon"])
 						configMutex.RLock()
 						if config.OutputToFiles {
 							clearOutputFiles(savePath, config.SaveToOneFile)
@@ -1525,6 +1524,7 @@ func onReady(savePath string) func() {
 			loopGame: // цикл по играм
 				for _, gameProcc := range gameTemplates {
 					if gameProcc.isRunning { //игра запущена
+						systray.SetIcon(activeIcon)
 						if countRunningProcesses > 1 { // несколько процессов
 							if foregroundPID == gameProcc.pid { // фокус на игре
 								if gameProcc.WindowTitle == "RetroArch" { // если игра RetroArch
@@ -1572,7 +1572,6 @@ func onReady(savePath string) func() {
 							break loopGame
 						}
 					}
-
 				}
 				time.Sleep(1 * time.Second)
 			}

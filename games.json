@@ -1,13 +1,5 @@
 [
     {
-        "process_name": "Supermarket Simulator.exe",
-        "window_title": "Supermarket Simulator",
-        "system": "Windows",
-        "game": "Supermarket Simulator",
-        "named_titles": "Windows\\Named_Titles\\Supermarket Simulator.png",
-        "named_boxarts": ""
-    },
-    {
         "process_name": "Bio Prototype.exe",
         "window_title": "Bio Prototype",
         "system": "Windows",
@@ -32,6 +24,14 @@
         "named_boxarts": "Windows\\Named_Boxarts\\OPENNOX-HD.EXE.png"
     },
     {
+        "process_name": "wireguard.exe",
+        "window_title": "�/�",
+        "system": "Windows",
+        "game": "wireguard",
+        "named_titles": "",
+        "named_boxarts": ""
+    },
+    {
         "process_name": "RoboQuest-Win64-Shipping.exe",
         "window_title": "RoboQuest  ",
         "system": "Windows",
@@ -45,6 +45,22 @@
         "system": "",
         "game": "",
         "named_titles": "",
+        "named_boxarts": ""
+    },
+    {
+        "process_name": "Starcom Unknown Space.exe",
+        "window_title": "Starcom Unknown Space",
+        "system": "Windows",
+        "game": "Starcom Unknown Space",
+        "named_titles": "Windows\\Named_Titles\\Starcom Unknown Space.png",
+        "named_boxarts": ""
+    },
+    {
+        "process_name": "Supermarket Simulator.exe",
+        "window_title": "Supermarket Simulator",
+        "system": "Windows",
+        "game": "Supermarket Simulator",
+        "named_titles": "Windows\\Named_Titles\\Supermarket Simulator.png",
         "named_boxarts": ""
     }
 ]
