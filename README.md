@@ -68,6 +68,24 @@ For example:
 
 If a thumbnail is not found, the program will display `noimage.png` from the theme folder (e.g., `Theme\default\noimage.png`). Ensure this file exists in your selected theme directory.
 
+# Theming
+
+To create your own visual theme:
+## 1. Create a Theme Folder
+Create a subfolder inside the `Theme` directory.  
+You can name it anything you like.
+## 2. Create a Stylesheet
+Inside the new folder, create a `styles.css` file.  
+It's recommended to copy `styles.css` from one of the existing themes and modify only the parts you want to change. Leave the rest untouched for compatibility.
+## 3. (Optional) Modify Widget Templates
+If you need to change the widget layout:
+- Copy the required `.html` templates from the `default` theme folder.
+- Edit them as needed.
+> ⚠️ **Important:**  
+> Modifying templates is not recommended unless you're confident in what you're doing.  
+> Templates must retain certain class names and IDs that are necessary for scripts to function correctly.
+## Recommendation
+In most cases, modifying only the `styles.css` file is enough to achieve custom theming.
 
 ### Support
 If you enjoy this tool, please consider supporting me on [DonationAlerts](https://www.donationalerts.com/r/ork8bit) ❤️.
@@ -146,6 +164,27 @@ TrackGameName — это легковесный инструмент для Wind
 - Часть `<game>` должна точно совпадать с полным названием игры из `content_history.lpl`, включая регион и информацию о диске (например, `Armored Core - Master of Arena (USA) (Disc 1)`).
 
 Если миниатюра не найдена, программа отобразит `noimage.png` из папки темы (например, `Theme\default\noimage.png`). Убедитесь, что этот файл существует в директории выбранной темы.
+
+# Темизация
+
+Чтобы создать собственное визуальное оформление:
+
+## 1. Создание папки темы
+Создайте подпапку в директории `Theme`.  
+Название может быть произвольным.
+## 2. Создание файла стилей
+Внутри новой папки создайте файл `styles.css`.  
+Рекомендуется скопировать `styles.css` из одной из готовых тем и изменить только те параметры, которые вам нужны. Остальное лучше оставить без изменений.
+## 3. (Необязательно) Изменение шаблонов виджетов
+Если вам нужно изменить HTML-разметку виджетов:
+- Скопируйте нужные `.html`-шаблоны из папки темы `default`.
+- Отредактируйте их по своему усмотрению.
+> ⚠️ **Важно:**  
+> Изменение шаблонов не рекомендуется, если вы не уверены в своих действиях.  
+> В шаблонах обязательно должны сохраняться определённые классы и идентификаторы — они необходимы для корректной работы скриптов.
+## Рекомендация
+В большинстве случаев достаточно изменения только `styles.css` для создания уникального оформления.
+
 
 ### Поддержка
 Если вам понравился этот инструмент, пожалуйста, поддержите меня на [DonationAlerts](https://www.donationalerts.com/r/ork8bit) ❤️.
